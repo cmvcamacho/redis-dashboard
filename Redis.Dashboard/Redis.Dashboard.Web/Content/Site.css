@@ -1,24 +1,19 @@
-﻿body {
-    padding-top: 50px;
-    padding-bottom: 20px;
+﻿.page-header{
+    margin-top: 15px;
 }
 
-/* Set padding to keep content from hitting the edges */
-.body-content {
-    padding-left: 15px;
-    padding-right: 15px;
+.redis-server-info-panel tr.active td{
+    border-top: 0px;
+    border-bottom: 2px solid #ddd;
+    font-weight: bold;
+}
+.redis-server-info-panel tr td{
+    font-size: smaller;
 }
 
-/* Override the default bootstrap behavior where horizontal description lists 
-   will truncate terms that are too long to fit in the left column 
-*/
-.dl-horizontal dt {
-    white-space: normal;
+.redis-server-info-panel tr.expanded{
+    display: table-row;
 }
-
-/* Set width on the form input elements since they're 100% wide by default */
-input,
-select,
-textarea {
-    max-width: 280px;
+.redis-server-info-panel tr.collapsed{
+    display: none;
 }
