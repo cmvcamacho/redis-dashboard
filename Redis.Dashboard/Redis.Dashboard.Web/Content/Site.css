@@ -1,6 +1,12 @@
 ﻿.page-header{
     margin-top: 15px;
 }
+.huge {
+    font-size: 30px !important;
+}
+.big {
+    font-size: 15px !important;
+}
 
 .redis-server-info-panel tr.active td{
     border-top: 0px;

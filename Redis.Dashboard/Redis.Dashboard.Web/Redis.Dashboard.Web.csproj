@@ -57,9 +57,14 @@
       <HintPath>..\packages\Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="StackExchange.Redis, Version=1.2.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\StackExchange.Redis.1.2.0\lib\net46\StackExchange.Redis.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.IO.Compression" />
     <Reference Include="System.Web.DynamicData" />
     <Reference Include="System.Web.Entity" />
     <Reference Include="System.Web.ApplicationServices" />
@@ -118,12 +123,22 @@
   <ItemGroup>
     <Compile Include="App_Start\BundleConfig.cs" />
     <Compile Include="App_Start\FilterConfig.cs" />
+    <Compile Include="App_Start\RedisConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
+    <Compile Include="Controllers\LoadDataController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="Models\GroupServerPageModel.cs" />
+    <Compile Include="Models\HomeModel.cs" />
+    <Compile Include="Models\ServerGroup.cs" />
+    <Compile Include="Models\Group.cs" />
+    <Compile Include="Models\ServerInfo.cs" />
+    <Compile Include="Models\ServersTotals.cs" />
+    <Compile Include="ObjectExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Services\RedisManager.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Content\bootstrap-theme.css" />
@@ -152,6 +167,7 @@
     <Content Include="Content\font-awesome\fonts\fontawesome-webfont.woff" />
     <Content Include="Content\font-awesome\fonts\fontawesome-webfont.woff2" />
     <Content Include="Content\font-awesome\fonts\FontAwesome.otf" />
+    <Content Include="config.json" />
     <None Include="Scripts\jquery-3.1.1.intellisense.js" />
     <Content Include="images\redis-logo.png" />
     <Content Include="Scripts\bootstrap.js" />
@@ -197,13 +213,13 @@
     <Content Include="Views\Home\Index.cshtml" />
     <Content Include="Views\Shared\Header.cshtml" />
     <Content Include="Views\Shared\Menu.cshtml" />
-    <Content Include="Views\Home\Totals.cshtml" />
-    <Content Include="Views\Home\ServerMaster.cshtml" />
-    <Content Include="Views\Home\ServerSlave.cshtml" />
+    <Content Include="Views\Shared\Totals.cshtml" />
+    <Content Include="Views\LoadData\ServerMaster.cshtml" />
+    <Content Include="Views\LoadData\ServerSlave.cshtml" />
+    <Content Include="Views\LoadData\Index.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
-    <Folder Include="Models\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="packages.config">

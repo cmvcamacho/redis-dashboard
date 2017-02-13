@@ -1,4 +1,10 @@
-﻿<div class="col-lg-3">
+﻿@using Redis.Dashboard.Web.Models;
+
+@model Redis.Dashboard.Web.Models.ServerInfo
+
+@if (Model != null)
+{
+    <div class="col-lg-3">
     <div class="panel panel-warning redis-server-info-panel">
         <div class="panel-heading">
             <span class="pull-left"><b>Server 12.234.12.12</b></span>
@@ -15,187 +21,188 @@
                         </tr>
                         <tr>
                             <td>redis_version</td>
-                            <td>3.0.503</td>
+                            <td>@Model.Server.Version</td>
                         </tr>
                         <tr class="collapsed">
                             <td>redis_mode</td>
-                            <td>standalone</td>
+                            <td>@Model.Server.Mode</td>
                         </tr>
                         <tr class="collapsed">
                             <td>os</td>
-                            <td>Windows x64</td>
+                            <td>@Model.Server.OS</td>
                         </tr>
                         <tr class="collapsed">
                             <td>process_id</td>
-                            <td>3932</td>
+                            <td>@Model.Server.ProcessId</td>
                         </tr>
                         <tr class="collapsed">
                             <td>uptime_in_seconds</td>
-                            <td>632321</td>
+                            <td>@Model.Server.UptimeInSeconds</td>
                         </tr>
                         <tr>
                             <td>uptime_in_days</td>
-                            <td>63</td>
+                            <td>@Model.Server.UptimeInDays</td>
                         </tr>
                         <tr class="active">
                             <td colspan="2">Clients</td>
                         </tr>
                         <tr>
                             <td>connected_clients</td>
-                            <td>4</td>
+                            <td>@Model.Clients.ConnectedClients</td>
                         </tr>
                         <tr class="collapsed">
                             <td>blocked_clients</td>
-                            <td>0</td>
+                            <td>@Model.Clients.BlockedClients</td>
                         </tr>
                         <tr class="active">
                             <td colspan="2">Memory</td>
                         </tr>
                         <tr>
                             <td>used_memory_human</td>
-                            <td>1.94M</td>
+                            <td>@Model.Memory.UsedMemoryHuman</td>
                         </tr>
                         <tr class="collapsed">
                             <td>used_memory_peak_human</td>
-                            <td>2.64M</td>
+                            <td>@Model.Memory.UsedMemoryPeakHuman</td>
                         </tr>
                         <tr>
                             <td>mem_fragmentation_ratio</td>
-                            <td>0.98</td>
+                            <td>@Model.Memory.FragmentationRatio</td>
                         </tr>
                         <tr class="active">
                             <td colspan="2">Stats</td>
                         </tr>
                         <tr class="collapsed">
                             <td>total_connections_received</td>
-                            <td>131425</td>
+                            <td>@Model.Stats.TotalConnectionsReceived</td>
                         </tr>
                         <tr class="collapsed">
                             <td>total_commands_processed</td>
-                            <td>1832689</td>
+                            <td>@Model.Stats.TotalCommandsProcessed</td>
                         </tr>
                         <tr>
                             <td>instantaneous_ops_per_sec</td>
-                            <td>0</td>
+                            <td>@Model.Stats.InstantaneousOpsPerSec</td>
                         </tr>
                         <tr class="collapsed">
                             <td>total_net_input_bytes</td>
-                            <td>44860393</td>
+                            <td>@Model.Stats.TotalNetInputBytes</td>
                         </tr>
                         <tr class="collapsed">
                             <td>total_net_output_bytes</td>
-                            <td>592914055</td>
+                            <td>@Model.Stats.TotalNetOutputBytes</td>
                         </tr>
                         <tr>
                             <td>instantaneous_input_kbps</td>
-                            <td>0.00</td>
+                            <td>@Model.Stats.InstantaneousInputKbps</td>
                         </tr>
                         <tr>
                             <td>instantaneous_output_kbps</td>
-                            <td>0.00</td>
+                            <td>@Model.Stats.InstantaneousOutputKbps</td>
                         </tr>
                         <tr>
                             <td>rejected_connections</td>
-                            <td>0</td>
+                            <td>@Model.Stats.RejectedConnections</td>
                         </tr>
                         <tr class="collapsed">
                             <td>sync_full</td>
-                            <td>0</td>
+                            <td>@Model.Stats.SyncFull</td>
                         </tr>
                         <tr class="collapsed">
                             <td>sync_partial_ok</td>
-                            <td>0</td>
+                            <td>@Model.Stats.SyncPartialErr</td>
                         </tr>
                         <tr class="collapsed">
                             <td>sync_partial_err</td>
-                            <td>0</td>
+                            <td>@Model.Stats.SyncPartialErr</td>
                         </tr>
                         <tr class="collapsed">
                             <td>expired_keys</td>
-                            <td>1</td>
+                            <td>@Model.Stats.ExpiredKeys</td>
                         </tr>
                         <tr class="collapsed">
                             <td>evicted_keys</td>
-                            <td>0</td>
+                            <td>@Model.Stats.EvictedKeys</td>
                         </tr>
                         <tr>
                             <td>keyspace_hits</td>
-                            <td>1334197</td>
+                            <td>@Model.Stats.KeyspaceHits</td>
                         </tr>
                         <tr>
                             <td>keyspace_misses</td>
-                            <td>14126</td>
+                            <td>@Model.Stats.KeyspaceMisses</td>
                         </tr>
                         <tr class="collapsed">
                             <td>pubsub_channels</td>
-                            <td>0</td>
+                            <td>@Model.Stats.PubsubChannels</td>
                         </tr>
                         <tr class="collapsed">
                             <td>pubsub_patterns</td>
-                            <td>0</td>
+                            <td>@Model.Stats.PubsubPatterns</td>
                         </tr>
                         <tr class="collapsed">
                             <td>latest_fork_usec</td>
-                            <td>1444</td>
+                            <td>@Model.Stats.LatestForkUsec</td>
                         </tr>
                         <tr class="collapsed active">
                             <td colspan="2">Replication</td>
                         </tr>
                         <tr class="collapsed">
                             <td>role</td>
-                            <td>master</td>
+                            <td>@Model.Replication.Role</td>
                         </tr>
                         <tr class="collapsed">
                             <td>connected_slaves</td>
-                            <td>0</td>
+                            <td>@Model.Replication.ConnectedSlaves</td>
                         </tr>
                         <tr class="collapsed">
                             <td>repl_backlog_active</td>
-                            <td>0</td>
+                            <td>@Model.Replication.ReplBacklogActive</td>
                         </tr>
                         <tr class="collapsed">
                             <td>repl_backlog_size</td>
-                            <td>1048576</td>
+                            <td>@Model.Replication.ReplBacklogSize</td>
                         </tr>
                         <tr class="collapsed">
                             <td>repl_backlog_first_byte_offset</td>
-                            <td>0</td>
+                            <td>@Model.Replication.ReplBacklogFirstByteOffset</td>
                         </tr>
                         <tr class="collapsed">
                             <td>repl_backlog_histlen</td>
-                            <td>0</td>
+                            <td>@Model.Replication.ReplBacklogHistlen</td>
                         </tr>
                         <tr class="active">
                             <td colspan="2">CPU</td>
                         </tr>
                         <tr>
                             <td>used_cpu_sys</td>
-                            <td>116.44</td>
+                            <td>@Model.CPU.UsedCpuUser</td>
                         </tr>
                         <tr>
                             <td>used_cpu_user</td>
-                            <td>159.06</td>
+                            <td>@Model.CPU.UsedCpuSys</td>
                         </tr>
                         <tr class="collapsed active">
                             <td colspan="2">Cluster</td>
                         </tr>
                         <tr class="collapsed">
                             <td>cluster_enabled</td>
-                            <td>0</td>
+                            <td>@Model.Cluster.Enabled</td>
                         </tr>
-                        <tr class="active">
-                            <td colspan="2">Keyspace</td>
-                        </tr>
-                        <tr>
-                            <td>db0</td>
-                            <td>keys=3325,expires=0,avg_ttl=0</td>
-                        </tr>
+                        @if (Model.Keyspace != null)
+                        {
+                            <tr class="active">
+                                <td colspan="2">Keyspace</td>
+                            </tr>
+                                <tr>
+                                    <td>db0</td>
+                                    <td>keys=@Model.Keyspace.Keys,expires=@Model.Keyspace.Expires,avg_ttl=@Model.Keyspace.AvgTTL</td>
+                                </tr>
+                        }
                     </tbody>
                 </table>
             </div>
-            <!-- /.table-responsive -->
         </div>
-        <!-- /.panel-body -->
     </div>
-    <!-- /.panel -->
 </div>
+}

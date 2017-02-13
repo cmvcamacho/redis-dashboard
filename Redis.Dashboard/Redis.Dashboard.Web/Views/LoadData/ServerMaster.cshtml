@@ -1,0 +1,209 @@
+﻿@using Redis.Dashboard.Web.Models;
+
+@model Redis.Dashboard.Web.Models.ServerInfo
+
+@if (Model != null)
+{
+    <div class="col-lg-3">
+        <div class="panel panel-success redis-server-info-panel">
+            <div class="panel-heading">
+                <span class="pull-left"><b>@Model.Title</b></span>
+                <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+                <div class="clearfix"></div>
+            </div>
+            <div class="panel-body">
+                <div class="table-responsive">
+                    <table class="table">
+                        <tbody>
+                            <tr class="active">
+                                <td colspan="2">Server</td>
+                            </tr>
+                            <tr>
+                                <td>redis_version</td>
+                                <td>@Model.Server.Version</td>
+                            </tr>
+                            <tr class="collapsed">
+                                <td>redis_mode</td>
+                                <td>@Model.Server.Mode</td>
+                            </tr>
+                            <tr class="collapsed">
+                                <td>os</td>
+                                <td>@Model.Server.OS</td>
+                            </tr>
+                            <tr class="collapsed">
+                                <td>process_id</td>
+                                <td>@Model.Server.ProcessId</td>
+                            </tr>
+                            <tr class="collapsed">
+                                <td>uptime_in_seconds</td>
+                                <td>@Model.Server.UptimeInSeconds</td>
+                            </tr>
+                            <tr>
+                                <td>uptime_in_days</td>
+                                <td>@Model.Server.UptimeInDays</td>
+                            </tr>
+                            <tr class="active">
+                                <td colspan="2">Clients</td>
+                            </tr>
+                            <tr>
+                                <td>connected_clients</td>
+                                <td>@Model.Clients.ConnectedClients</td>
+                            </tr>
+                            <tr class="collapsed">
+                                <td>blocked_clients</td>
+                                <td>@Model.Clients.BlockedClients</td>
+                            </tr>
+                            <tr class="active">
+                                <td colspan="2">Memory</td>
+                            </tr>
+                            <tr>
+                                <td>used_memory_human</td>
+                                <td>@Model.Memory.UsedMemoryHuman</td>
+                            </tr>
+                            <tr class="collapsed">
+                                <td>used_memory_peak_human</td>
+                                <td>@Model.Memory.UsedMemoryPeakHuman</td>
+                            </tr>
+                            <tr>
+                                <td>mem_fragmentation_ratio</td>
+                                <td>@Model.Memory.FragmentationRatio</td>
+                            </tr>
+                            <tr class="active">
+                                <td colspan="2">Stats</td>
+                            </tr>
+                            <tr class="collapsed">
+                                <td>total_connections_received</td>
+                                <td>@Model.Stats.TotalConnectionsReceived</td>
+                            </tr>
+                            <tr class="collapsed">
+                                <td>total_commands_processed</td>
+                                <td>@Model.Stats.TotalCommandsProcessed</td>
+                            </tr>
+                            <tr>
+                                <td>instantaneous_ops_per_sec</td>
+                                <td>@Model.Stats.InstantaneousOpsPerSec</td>
+                            </tr>
+                            <tr class="collapsed">
+                                <td>total_net_input_bytes</td>
+                                <td>@Model.Stats.TotalNetInputBytes</td>
+                            </tr>
+                            <tr class="collapsed">
+                                <td>total_net_output_bytes</td>
+                                <td>@Model.Stats.TotalNetOutputBytes</td>
+                            </tr>
+                            <tr>
+                                <td>instantaneous_input_kbps</td>
+                                <td>@Model.Stats.InstantaneousInputKbps</td>
+                            </tr>
+                            <tr>
+                                <td>instantaneous_output_kbps</td>
+                                <td>@Model.Stats.InstantaneousOutputKbps</td>
+                            </tr>
+                            <tr>
+                                <td>rejected_connections</td>
+                                <td>@Model.Stats.RejectedConnections</td>
+                            </tr>
+                            <tr class="collapsed">
+                                <td>sync_full</td>
+                                <td>@Model.Stats.SyncFull</td>
+                            </tr>
+                            <tr class="collapsed">
+                                <td>sync_partial_ok</td>
+                                <td>@Model.Stats.SyncPartialErr</td>
+                            </tr>
+                            <tr class="collapsed">
+                                <td>sync_partial_err</td>
+                                <td>@Model.Stats.SyncPartialErr</td>
+                            </tr>
+                            <tr class="collapsed">
+                                <td>expired_keys</td>
+                                <td>@Model.Stats.ExpiredKeys</td>
+                            </tr>
+                            <tr class="collapsed">
+                                <td>evicted_keys</td>
+                                <td>@Model.Stats.EvictedKeys</td>
+                            </tr>
+                            <tr>
+                                <td>keyspace_hits</td>
+                                <td>@Model.Stats.KeyspaceHits</td>
+                            </tr>
+                            <tr>
+                                <td>keyspace_misses</td>
+                                <td>@Model.Stats.KeyspaceMisses</td>
+                            </tr>
+                            <tr class="collapsed">
+                                <td>pubsub_channels</td>
+                                <td>@Model.Stats.PubsubChannels</td>
+                            </tr>
+                            <tr class="collapsed">
+                                <td>pubsub_patterns</td>
+                                <td>@Model.Stats.PubsubPatterns</td>
+                            </tr>
+                            <tr class="collapsed">
+                                <td>latest_fork_usec</td>
+                                <td>@Model.Stats.LatestForkUsec</td>
+                            </tr>
+                            <tr class="collapsed active">
+                                <td colspan="2">Replication</td>
+                            </tr>
+                            <tr class="collapsed">
+                                <td>role</td>
+                                <td>@Model.Replication.Role</td>
+                            </tr>
+                            <tr class="collapsed">
+                                <td>connected_slaves</td>
+                                <td>@Model.Replication.ConnectedSlaves</td>
+                            </tr>
+                            <tr class="collapsed">
+                                <td>repl_backlog_active</td>
+                                <td>@Model.Replication.ReplBacklogActive</td>
+                            </tr>
+                            <tr class="collapsed">
+                                <td>repl_backlog_size</td>
+                                <td>@Model.Replication.ReplBacklogSize</td>
+                            </tr>
+                            <tr class="collapsed">
+                                <td>repl_backlog_first_byte_offset</td>
+                                <td>@Model.Replication.ReplBacklogFirstByteOffset</td>
+                            </tr>
+                            <tr class="collapsed">
+                                <td>repl_backlog_histlen</td>
+                                <td>@Model.Replication.ReplBacklogHistlen</td>
+                            </tr>
+                            <tr class="active">
+                                <td colspan="2">CPU</td>
+                            </tr>
+                            <tr>
+                                <td>used_cpu_sys</td>
+                                <td>@Model.CPU.UsedCpuUser</td>
+                            </tr>
+                            <tr>
+                                <td>used_cpu_user</td>
+                                <td>@Model.CPU.UsedCpuSys</td>
+                            </tr>
+                            <tr class="collapsed active">
+                                <td colspan="2">Cluster</td>
+                            </tr>
+                            <tr class="collapsed">
+                                <td>cluster_enabled</td>
+                                <td>@Model.Cluster.Enabled</td>
+                            </tr>
+                            @if (Model.Keyspace != null)
+                            {
+                                <tr class="active">
+                                    <td colspan="2">Keyspace</td>
+                                </tr>
+                                <tr>
+                                    <td>db0</td>
+                                    <td>keys=@Model.Keyspace.Keys,expires=@Model.Keyspace.Expires,avg_ttl=@Model.Keyspace.AvgTTL</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+

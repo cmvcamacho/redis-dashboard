@@ -14,6 +14,18 @@ namespace Redis.Dashboard.Web
             routes.IgnoreRoute("{resource}.axd/{*pathInfo}");
 
             routes.MapRoute(
+                name: "ServerGroup",
+                url: "{friendlyUrl}",
+                defaults: new { controller = "Home", action = "Index", friendlyUrl = UrlParameter.Optional }
+            );
+
+            routes.MapRoute(
+                name: "LoadData",
+                url: "LoadData/{friendlyUrl}",
+                defaults: new { controller = "LoadData", action = "Index", friendlyUrl = UrlParameter.Optional }
+            );
+
+            routes.MapRoute(
                 name: "Default",
                 url: "{controller}/{action}/{id}",
                 defaults: new { controller = "Home", action = "Index", id = UrlParameter.Optional }

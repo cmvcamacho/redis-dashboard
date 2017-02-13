@@ -1,34 +1,31 @@
-﻿    <!-- /.navbar-top-links -->
+﻿@using Redis.Dashboard.Web.Models;
+
+@model HomeModel
+
 <div class="navbar-default sidebar" role="navigation">
     <div class="sidebar-nav navbar-collapse">
-        <ul class="nav" id="side-menu">
-            <li class="active">
-                <a href="#">Staging<span class="fa arrow"></span></a>
-                <ul class="nav nav-second-level collapse in" aria-expanded="true">
-                    <li>
-                        <a href="#" class="active">Farm 01</a>
+        @if (Model != null && Model.GroupsToShow != null && Model.GroupsToShow.Any())
+        {
+            <ul class="nav" id="side-menu">
+                @foreach (var group in Model.GroupsToShow)
+                {
+                    <li class="@((group.GroupId == Model.ActiveGroupId) ? "active" : string.Empty)">
+                        <a href="#">@group.Title<span class="fa arrow"></span></a>
+                        @if (group.ServerGroups != null && group.ServerGroups.Any())
+                        {
+                            <ul class="nav nav-second-level @((group.GroupId == Model.ActiveGroupId) ? "collapse in" : string.Empty)" @((group.GroupId == Model.ActiveGroupId) ? "aria-expanded=\"true\"" : string.Empty)>
+                                @foreach (var serverGroup in group.ServerGroups)
+                                {
+                                    <li>
+                                        <a href="/@serverGroup.FriendlyUrl" class="active">@serverGroup.Title</a>
+                                    </li>
+                                }
+                            </ul>                        
+                        }
                     </li>
-                </ul>
-                <!-- /.nav-second-level -->
-            </li>
-            <li>
-                <a href="#">Production<span class="fa arrow"></span></a>
-                <ul class="nav nav-second-level">
-                    <li>
-                        <a href="#">Farm 01</a>
-                    </li>
-                    <li>
-                        <a href="#">Farm 02</a>
-                    </li>
-                    <li>
-                        <a href="#">Farm 03</a>
-                    </li>
-                </ul>
-                <!-- /.nav-second-level -->
-            </li>
 
-        </ul>
-    </div>
-    <!-- /.sidebar-collapse -->
+                }
+            </ul>
+        }
 </div>
-<!-- /.navbar-static-side -->
+</div>

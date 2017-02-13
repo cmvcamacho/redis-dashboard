@@ -7,6 +7,15 @@
     <title>Redis dashboard</title>
 
 
+    <script>
+        function deferCall(method) {
+            if (window.jQuery)
+                method();
+            else
+                setTimeout(function () { deferCall(method) }, 50);
+        }
+    </script>
+
     @Styles.Render("~/Content/vendor")
     <!--[if lt IE 9]>
         <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>

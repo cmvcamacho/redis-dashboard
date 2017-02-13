@@ -1,27 +1,31 @@
-﻿<div id="page-wrapper">
-    <div class="row">
-        <div class="col-lg-12">
-            <div class="page-header">
-                <h2 style="display: inline;">Staging - Farm 01</h2>
-                <button class="btn btn-link server-details">
-                    <i class="fa fa-arrows-alt"></i> more details
-                </button>
-            </div>    
+﻿@using Redis.Dashboard.Web.Models;
+
+@model HomeModel
+
+
+<div id="page-wrapper">
+    @if (Model != null && Model.ActiveServerGroup != null)
+    {
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="page-header">
+                    <h2 style="display: inline;">@Model.ActiveServerGroup.GroupTitle - @Model.ActiveServerGroup.ServerGroup.Title</h2>
+                    <button class="btn btn-link server-details">
+                        <i class="fa fa-arrows-alt"></i> more details
+                    </button>
+                </div>
+            </div>
         </div>
-        <!-- /.col-lg-12 -->
-    </div>
-    @Html.Partial("Totals")
-    <div class="row">
-        @Html.Partial("ServerMaster")
-        @Html.Partial("ServerMaster")
-        @Html.Partial("ServerMaster")
-        @Html.Partial("ServerMaster")
-        @Html.Partial("ServerMaster")
-        @Html.Partial("ServerSlave")
-        @Html.Partial("ServerSlave")
-        @Html.Partial("ServerSlave")
-        @Html.Partial("ServerSlave")
-        @Html.Partial("ServerSlave")
-    </div>
-    <!-- /.row -->
+        @Html.Partial("Totals", new ServersTotals())
+        <div class="row">
+            @*@foreach (var server in Model.ActiveServerGroup.ServerGroup.Servers)
+            {
+                @Html.Partial("ServerMaster", model: server)
+            }*@
+        </div>
+
+        <script>
+            deferCall(function () { LoadData('/LoadData/@Model.ActiveServerGroup.ServerGroup.FriendlyUrl') });
+        </script>
+    }
 </div>
