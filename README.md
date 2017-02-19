@@ -4,7 +4,7 @@ A simple dashboard to monitor Redis instances
 A dashboard to display the status of an individual Redis server or multiple servers arranged in Cluster or Sentinel modes.
 
 ###### Dashboard
-![dashboard](/capture.png)
+![dashboard](Capture.PNG)
 
 ## Usage
 
