@@ -4,8 +4,12 @@
 
 @if (Model != null)
 {
-    <div class="col-lg-3">
-        <div class="panel panel-success redis-server-info-panel">
+    var cssPanel = Model.Replication.Role.Equals("master", StringComparison.InvariantCultureIgnoreCase)
+       ? "panel-success"
+       : "panel-warning";
+
+   <div class="col-lg-3">
+        <div class="panel @cssPanel redis-server-info-panel">
             <div class="panel-heading">
                 <span class="pull-left"><b>@Model.Title</b></span>
                 <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>

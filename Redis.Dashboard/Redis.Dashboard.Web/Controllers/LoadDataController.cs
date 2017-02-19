@@ -4,53 +4,48 @@ using StackExchange.Redis;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
 
 namespace Redis.Dashboard.Web.Controllers
 {
     public class LoadDataController : Controller
-    {
-        
-        public ActionResult Index(string friendlyUrl)
+    {        
+        public async Task<ActionResult> Index(string friendlyUrl)
         {
             var model = RedisConfig.GetServerGroupByFriendlyUrl(friendlyUrl);
-            model.Servers = new RedisManager().GetServerInfo(friendlyUrl);
+            model.Servers = await RedisManager.GetRedisServersInfo(friendlyUrl, model.ServerGroup.Endpoints);
 
-            model.Totals = new ServersTotals
-            {
-                TotalMemory = model.Servers
-                                    .Where(s => s.Replication != null && s.Replication.Role.Equals("master", StringComparison.InvariantCultureIgnoreCase))
-                                    .Sum(s => s.Memory.UsedMemory).GetBytesReadable(),
-                TotalKeys = model.Servers
-                                    .Where(s => s.Replication != null && s.Replication.Role.Equals("master", StringComparison.InvariantCultureIgnoreCase) && s.Keyspace != null)
+            var masterServers = model.Servers
+                                    .Where(s => s.Replication != null && s.Replication.Role.Equals("master", StringComparison.InvariantCultureIgnoreCase));
+
+            model.Totals = new ServersTotals();
+            model.Totals.TotalMemory = masterServers
+                                    .Sum(s => s.Memory.UsedMemory)
+                                    .GetBytesReadable();
+            model.Totals.TotalKeys = masterServers
+                                    .Where(s => s.Keyspace != null)
                                     .Sum(s => s.Keyspace.Keys)
-                                    .GetBytesReadable().Replace("B", string.Empty),
-                TotalClients = model.Servers
-                                    .Where(s => s.Replication != null && s.Replication.Role.Equals("master", StringComparison.InvariantCultureIgnoreCase) && s.Keyspace != null)
+                                    .GetBytesReadable().Replace("B", string.Empty);
+            model.Totals.TotalClients = masterServers
                                     .Sum(s => s.Clients.ConnectedClients)
-                                    .GetBytesReadable().Replace("B", string.Empty),
-                TotalInputKbps = model.Servers
-                                    .Where(s => s.Replication != null && s.Replication.Role.Equals("master", StringComparison.InvariantCultureIgnoreCase))
-                                    .Sum(s => s.Stats.InstantaneousInputKbps),
-                TotalOutputKbps = model.Servers
-                                    .Where(s => s.Replication != null && s.Replication.Role.Equals("master", StringComparison.InvariantCultureIgnoreCase))
-                                    .Sum(s => s.Stats.InstantaneousOutputKbps),
-                TotalOps = model.Servers
-                                    .Where(s => s.Replication != null && s.Replication.Role.Equals("master", StringComparison.InvariantCultureIgnoreCase))
-                                    .Sum(s => s.Stats.InstantaneousOpsPerSec),
-                TotalMisses = model.Servers
-                                    .Where(s => s.Replication != null && s.Replication.Role.Equals("master", StringComparison.InvariantCultureIgnoreCase))
+                                    .GetBytesReadable().Replace("B", string.Empty);
+            model.Totals.TotalInputKbps = masterServers
+                                    .Sum(s => s.Stats.InstantaneousInputKbps);
+            model.Totals.TotalOutputKbps = masterServers
+                                    .Sum(s => s.Stats.InstantaneousOutputKbps);
+            model.Totals.TotalOps = masterServers
+                                    .Sum(s => s.Stats.InstantaneousOpsPerSec);
+            model.Totals.TotalMisses = masterServers
                                     .Sum(s => s.Stats.KeyspaceMisses)
-                                    .GetBytesReadable().Replace("B", string.Empty),
-                TotalHits = model.Servers
-                                    .Where(s => s.Replication != null && s.Replication.Role.Equals("master", StringComparison.InvariantCultureIgnoreCase))
+                                    .GetBytesReadable().Replace("B", string.Empty);
+            model.Totals.TotalHits = masterServers
                                     .Sum(s => s.Stats.KeyspaceHits)
-                                    .GetBytesReadable().Replace("B", string.Empty),
-                InfoCluster = string.Format("{0} masters / {1} slaves",
-                                    model.Servers.Count(s => s.Replication != null && s.Replication.Role.Equals("master", StringComparison.InvariantCultureIgnoreCase)),
-                                    model.Servers.Count(s => s.Replication != null && !s.Replication.Role.Equals("master", StringComparison.InvariantCultureIgnoreCase)))
-            };
+                                    .GetBytesReadable().Replace("B", string.Empty);
+            model.Totals.InfoCluster = string.Format("{0} masters / {1} slaves",
+                                    masterServers.Count(),
+                                    model.Servers.Count() - masterServers.Count());
 
             return PartialView(model);
         }

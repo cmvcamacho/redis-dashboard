@@ -23,16 +23,6 @@ namespace Redis.Dashboard.Web
                 string json = r.ReadToEnd();
                 GroupsToShow = JsonConvert.DeserializeObject<List<Group>>(json);
             }
-            if(GroupsToShow != null && GroupsToShow.Any())
-            {
-                var redisManager = new RedisManager();
-                foreach (var redisConn in GroupsToShow
-                    .SelectMany(g => g.ServerGroups
-                        .Select(sg => new { Key = sg.FriendlyUrl, ConnString = sg.Endpoints })))
-                {
-                    redisManager.ReadServerInfo(redisConn.Key, redisConn.ConnString);
-                }
-            }
         }
         public static GroupServerPageModel GetDefaultServerGroup()
         {

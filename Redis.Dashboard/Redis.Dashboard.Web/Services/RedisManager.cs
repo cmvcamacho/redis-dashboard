@@ -5,6 +5,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using System.Web;
 
@@ -19,7 +20,40 @@ namespace Redis.Dashboard.Web.Services
             Connections = new ConcurrentDictionary<string, ConnectionMultiplexer>();
         }
 
-        public void ReadServerInfo(string key, string connString)
+
+        public static async Task<List<ServerInfo>> GetRedisServersInfo(string key, string connString)
+        {
+            try
+            {
+                CreateConnectionToServers(key, connString);
+
+                List<ServerInfo> list = new List<ServerInfo>();
+                if (Connections.ContainsKey(key))
+                {
+                    var redis = Connections[key];
+                    var endpoints = redis.GetEndPoints();
+
+                    var tasks = endpoints.Select(e => GetServerInfo(redis, e, list));
+                    await Task.WhenAll(tasks.ToArray());
+                }
+
+                return list.OrderBy(l => l.Replication.Role).ThenBy(l => l.Title).ToList();
+            }
+            catch (Exception e)
+            {
+
+            }
+            return null;
+        }
+
+        private static async Task GetServerInfo(ConnectionMultiplexer redis, EndPoint endpoint, List<ServerInfo> list)
+        {
+            var info = await redis.GetServer(endpoint).InfoAsync();
+            var serverInfo = new ServerInfo(endpoint.ToString(), info.ToList());
+            list.Add(serverInfo);
+        }
+
+        private static void CreateConnectionToServers(string key, string connString)
         {
             try
             {
@@ -35,31 +69,8 @@ namespace Redis.Dashboard.Web.Services
             }
         }
 
-        public List<ServerInfo> GetServerInfo(string key)
-        {
-            try
-            {
-                List<ServerInfo> list = new List<ServerInfo>();
-                if (Connections.ContainsKey(key))
-                {
-                    var redis = Connections[key];
-                    var endpoints = redis.GetEndPoints();
-                    Parallel.ForEach(endpoints, (endpoint) => 
-                    {
-                        var x = redis.GetServer(endpoint).Info();
-                        var y = new ServerInfo(endpoint.ToString(), x.ToList());
-                        list.Add(y);
-                    });
-                }
 
-                return list.OrderBy(l => l.Replication.Role).ThenBy(l => l.Title).ToList();
-            }
-            catch (Exception e)
-            {
 
-            }
-            return null;
-        }
 
         // Dispose() calls Dispose(true)  
         public void Dispose()

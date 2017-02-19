@@ -19,14 +19,7 @@
     <div class="row">
         @foreach (var server in Model.Servers)
         {
-            if (server.Replication.Role.Equals("master", StringComparison.InvariantCultureIgnoreCase))
-            {
-                @Html.Partial("ServerMaster", server)
-            }
-            else
-            {
-                @Html.Partial("ServerSlave", server)
-            }
+            @Html.Partial("ServerInfo", server)
         }
     </div>
 

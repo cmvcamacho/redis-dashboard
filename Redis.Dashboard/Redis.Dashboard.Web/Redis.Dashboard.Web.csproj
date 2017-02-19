@@ -214,8 +214,7 @@
     <Content Include="Views\Shared\Header.cshtml" />
     <Content Include="Views\Shared\Menu.cshtml" />
     <Content Include="Views\Shared\Totals.cshtml" />
-    <Content Include="Views\LoadData\ServerMaster.cshtml" />
-    <Content Include="Views\LoadData\ServerSlave.cshtml" />
+    <Content Include="Views\LoadData\ServerInfo.cshtml" />
     <Content Include="Views\LoadData\Index.cshtml" />
   </ItemGroup>
   <ItemGroup>
