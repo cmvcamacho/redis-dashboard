@@ -61,6 +61,8 @@ This project is built using the following stack:
 * Microsoft MVC
 * Newtonsoft.Json
 * StackExchange.Redis
+* Rivet.js
+* Serilog
 
 ## Credits
 
