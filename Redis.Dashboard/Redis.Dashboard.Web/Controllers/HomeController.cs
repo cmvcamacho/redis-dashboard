@@ -1,4 +1,5 @@
 ﻿using Redis.Dashboard.Web.Models;
+using Serilog;
 using StackExchange.Redis;
 using System;
 using System.Collections.Generic;
@@ -16,28 +17,30 @@ namespace Redis.Dashboard.Web.Controllers
             {
                 GroupsToShow = RedisConfig.GroupsToShow
             };
-
-            var groupServerPageModel = RedisConfig.GetServerGroupByFriendlyUrl(friendlyUrl);
-            if (groupServerPageModel != null)
+            try
             {
-                model.ActiveGroupId = groupServerPageModel.GroupId;
-                model.ActiveServerGroup = groupServerPageModel;
-            }
-
-            if (model.ActiveGroupId == 0 && model.GroupsToShow != null && model.GroupsToShow.Any())
-            {
-                var defaultGroupServer = RedisConfig.GetDefaultServerGroup();
-                if (defaultGroupServer != null)
+                var groupServerPageModel = RedisConfig.GetServerGroupByFriendlyUrl(friendlyUrl);
+                if (groupServerPageModel != null)
                 {
-                    model.ActiveGroupId = defaultGroupServer.GroupId;
-                    model.ActiveServerGroup = defaultGroupServer;
+                    model.ActiveGroupId = groupServerPageModel.GroupId;
+                    model.ActiveServerGroup = groupServerPageModel;
+                }
+
+                if (model.ActiveGroupId == 0 && model.GroupsToShow != null && model.GroupsToShow.Any())
+                {
+                    var defaultGroupServer = RedisConfig.GetDefaultServerGroup();
+                    if (defaultGroupServer != null)
+                    {
+                        model.ActiveGroupId = defaultGroupServer.GroupId;
+                        model.ActiveServerGroup = defaultGroupServer;
+                    }
                 }
             }
-
+            catch (Exception e)
+            {
+                Log.Error(e, "Index for {friendlyUrl}", friendlyUrl);
+            }
             return View(model);
         }
-
-
-
     }
 }

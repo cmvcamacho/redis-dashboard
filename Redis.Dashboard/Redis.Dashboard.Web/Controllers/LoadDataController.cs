@@ -1,5 +1,6 @@
 ﻿using Redis.Dashboard.Web.Models;
 using Redis.Dashboard.Web.Services;
+using Serilog;
 using StackExchange.Redis;
 using System;
 using System.Collections.Generic;
@@ -52,6 +53,7 @@ namespace Redis.Dashboard.Web.Controllers
             }
             catch (Exception e)
             {
+                Log.Error(e, "LoadData for {friendlyUrl}", friendlyUrl);
                 return Json(new GroupServerPageModel(), JsonRequestBehavior.AllowGet);
             }
         }

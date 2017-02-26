@@ -1,4 +1,5 @@
 ﻿using Redis.Dashboard.Web.Models;
+using Serilog;
 using StackExchange.Redis;
 using System;
 using System.Collections.Concurrent;
@@ -41,7 +42,7 @@ namespace Redis.Dashboard.Web.Services
             }
             catch (Exception e)
             {
-
+                Log.Error(e, "GetRedisServersInfo for {key} - {connString}", key, connString);
             }
             return null;
         }
@@ -65,7 +66,7 @@ namespace Redis.Dashboard.Web.Services
             }
             catch (Exception e)
             {
-
+                Log.Error(e, "CreateConnectionToServers for {key} - {connString}", key, connString);
             }
         }
 
