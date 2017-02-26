@@ -1,0 +1,40 @@
+﻿@using Redis.Dashboard.Web.Models;
+
+@model List<SearchResult>
+
+
+@if (Model != null)
+{
+    <table class="table table-striped"> 
+        <thead> 
+            <tr> 
+                <th>Key</th> 
+                <th>Type</th> 
+                <th>Ttl</th> 
+                <th>Size</th>
+                <th>Server</th> 
+            </tr> 
+        </thead> 
+        <tbody> 
+            @if (Model.Any())
+            {
+                foreach (var result in Model)
+                {
+                    <tr>
+                        <td>@result.Key</td>
+                        <td>@result.Type</td>
+                        <td>@result.Ttl</td>
+                        <td>@result.Size</td>
+                        <td>@result.Server</td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="5">No Results found...</td>
+                </tr>
+            }
+        </tbody> 
+    </table>
+}

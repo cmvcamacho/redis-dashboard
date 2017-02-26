@@ -137,6 +137,7 @@
     <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\RedisConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
+    <Compile Include="Controllers\SearchController.cs" />
     <Compile Include="Controllers\LoadDataController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Global.asax.cs">
@@ -144,6 +145,7 @@
     </Compile>
     <Compile Include="Models\GroupServerPageModel.cs" />
     <Compile Include="Models\HomeModel.cs" />
+    <Compile Include="Models\SearchResult.cs" />
     <Compile Include="Models\ServerGroup.cs" />
     <Compile Include="Models\Group.cs" />
     <Compile Include="Models\ServerInfo.cs" />
@@ -228,6 +230,7 @@
     <Content Include="Views\Shared\Menu.cshtml" />
     <Content Include="Views\Shared\Totals.cshtml" />
     <Content Include="Views\Shared\ServerInfo.cshtml" />
+    <Content Include="Views\Search\Index.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
@@ -258,7 +261,7 @@
           <AutoAssignPort>True</AutoAssignPort>
           <DevelopmentServerPort>61437</DevelopmentServerPort>
           <DevelopmentServerVPath>/</DevelopmentServerVPath>
-          <IISUrl>http://localhost:61437/</IISUrl>
+          <IISUrl>http://localhost:61447/</IISUrl>
           <NTLMAuthentication>False</NTLMAuthentication>
           <UseCustomServer>False</UseCustomServer>
           <CustomServerUrl>

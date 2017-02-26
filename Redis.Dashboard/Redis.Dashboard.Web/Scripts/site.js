@@ -30,6 +30,19 @@ $(document).ready(function () {
 
     });
     redisDataView = rivets.bind($('#page-wrapper'), { redisInfo: {} })
+
+    $('#search').keyup(function (e) {
+        e.stopPropagation();
+        e.preventDefault();
+        e.returnValue = false;
+        e.cancelBubble = true;
+
+        clearTimeout($.data(this, 'timer'));
+        if (e.keyCode == 13)
+            search();
+        else
+            $(this).data('timer', setTimeout(search, 200));
+    });
 })
 
 
@@ -44,4 +57,21 @@ function LoadData(friendlyUrl) {
         .always(function () {
             setTimeout(function () { LoadData(friendlyUrl) }, 1000);
         });
+}
+
+function search() {
+    var existingString = $("#search").val();
+    if (existingString.length == 0) {
+        $("#server-info").show();
+        return false; //wasn't enter, not > 0 char
+    }
+    friendlyUrl = $("#search").attr('friendlyUrl');
+    $.get('/Search/' + friendlyUrl + '/' + existingString, function (data) {
+        $("#server-info").hide();
+
+        $('#search-results').html(data);
+        $("#search-results").show();
+    });
+
+    return false; 
 }

@@ -7,15 +7,27 @@
     @if (Model != null && Model.ActiveServerGroup != null)
     {
         <div class="row">
-            <div class="col-lg-12">
-                <div class="page-header">
+            <div class="col-lg-12 page-header">
+                <div class="col-md-6">
                     <h2 style="display: inline;">@Model.ActiveServerGroup.GroupTitle - @Model.ActiveServerGroup.ServerGroup.Title</h2>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="search-form">
+                        <div class="form-group has-feedback">
+                            <label for="search" class="sr-only">Search</label>
+                            <input type="text" class="form-control" name="search" id="search" friendlyUrl="@Model.ActiveServerGroup.ServerGroup.FriendlyUrl" placeholder="search">
+                            <span class="glyphicon glyphicon-search form-control-feedback"></span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
         @Html.Partial("Totals")
-        <div class="row">
+        <div id="server-info" class="row">
             @Html.Partial("ServerInfo")
+        </div>
+        <div id="search-results" class="row table-responsive" style="display: none;">
         </div>
 
         <script>
