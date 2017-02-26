@@ -8,6 +8,22 @@ namespace Redis.Dashboard.Web.Models
 {
     public class ServerInfo
     {
+        public bool IsMaster
+        {
+            get
+            {
+                return Replication != null
+                    && !string.IsNullOrWhiteSpace(Replication.Role)
+                    && Replication.Role.Equals("master", StringComparison.InvariantCultureIgnoreCase);
+            }
+        }
+        public bool IsSlave
+        {
+            get
+            {
+                return !IsMaster;
+            }
+        }
         public string Title { get; set; }
         public Server Server { get; set; }
         public Memory Memory { get; set; }
@@ -16,7 +32,7 @@ namespace Redis.Dashboard.Web.Models
         public Replication Replication { get; set; }
         public CPU CPU { get; set; }
         public Cluster Cluster { get; set; }
-        public Keyspace Keyspace { get; set; }
+        public List<Keyspace> Keyspace { get; set; }
         
         public ServerInfo(string title, List<IGrouping<string, KeyValuePair<string, string>>> info)
         {
@@ -24,6 +40,8 @@ namespace Redis.Dashboard.Web.Models
 
             if (info == null || !info.Any())
                 return;
+
+            Keyspace = new List<Models.Keyspace>();
 
             foreach (var group in info)
             {
@@ -51,7 +69,7 @@ namespace Redis.Dashboard.Web.Models
                         Cluster = new Cluster(group.Select(x => x).ToList());
                         break;
                     case "keyspace":
-                        Keyspace = new Keyspace(group.Select(x => x).ToList());
+                        Keyspace = Models.Keyspace.Create(group.Select(x => x).ToList());
                         break;
                     default:
                         break;
@@ -354,7 +372,6 @@ namespace Redis.Dashboard.Web.Models
 
         public Cluster(List<KeyValuePair<string, string>> values)
         {
-            long l;
             foreach (var value in values)
             {
                 switch (value.Key.ToLower())
@@ -371,34 +388,34 @@ namespace Redis.Dashboard.Web.Models
 
     public class Keyspace
     {
+        public string Database { get; set; }
         public long Keys { get; set; }
         public long Expires { get; set; }
         public decimal AvgTTL { get; set; }
 
-        public Keyspace(List<KeyValuePair<string, string>> values)
+        public static List<Keyspace> Create(List<KeyValuePair<string, string>> values)
         {
+            List<Keyspace> list = new List<Keyspace>();
             long l;
             decimal d;
             foreach (var value in values)
             {
-                switch (value.Key.ToLower())
+                var keyspace = new Keyspace();
+                keyspace.Database = value.Key;
+
+                var arr = value.Value.Split(',');
+                if (arr != null && arr.Length == 3)
                 {
-                    case "db0":
-                        var arr = value.Value.Split(',');
-                        if (arr != null && arr.Length == 3)
-                        {
-                            if (long.TryParse(arr[0].Split('=')[1], out l))
-                                Keys = l;
-                            if (long.TryParse(arr[1].Split('=')[1], out l))
-                                Expires = l;
-                            if (decimal.TryParse(arr[2].Split('=')[1], out d))
-                                AvgTTL = d;
-                        }
-                        break;
-                    default:
-                        break;
+                    if (long.TryParse(arr[0].Split('=')[1], out l))
+                        keyspace.Keys = l;
+                    if (long.TryParse(arr[1].Split('=')[1], out l))
+                        keyspace.Expires = l;
+                    if (decimal.TryParse(arr[2].Split('=')[1], out d))
+                        keyspace.AvgTTL = d;
                 }
+                list.Add(keyspace);
             }
+            return list;
         }
     }
 }

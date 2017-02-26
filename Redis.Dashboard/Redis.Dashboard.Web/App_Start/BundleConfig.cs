@@ -16,6 +16,7 @@ namespace Redis.Dashboard.Web
                 .Include("~/Scripts/metisMenu/metisMenu.min.js")
                 .Include("~/Scripts/raphael/raphael.min.js")
                 .Include("~/Scripts/morrisjs/morris.min.js")
+                .Include("~/Scripts/RivetJs/rivets.bundled.min.js")
                 );
             bundles.Add(new ScriptBundle("~/bundles/custom")
                 .Include("~/Scripts/sb-admin-2.js")

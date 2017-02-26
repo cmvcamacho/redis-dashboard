@@ -1,32 +1,47 @@
-$(document).on("click", ".server-details", function (event) {
-    if ($('tr.collapsed').length > 0) {
-        ShowDetails(true);
-    }
-    else if ($('tr.expanded').length > 0){
-        ShowDetails(false);
-    }
-});
+var redisDataView = {};
 
-function ShowDetails(show) {
-    if (show === undefined)
-        return;
-    if (show) {
-        $('tr.collapsed')
-            .removeClass('collapsed')
-            .addClass('expanded');
-        $(".server-details").html('<i class="fa fa-arrows-alt"></i> more details');
-    }
-    else{
-        $('tr.expanded')
-            .removeClass('expanded')
-            .addClass('collapsed');
-        $(".server-details").html('<i class="fa fa-arrows-alt"></i> less details');
-    }
-}
+$(document).ready(function () {
+    rivets.configure({
+
+        // Attribute prefix in templates
+        prefix: 'rv',
+
+        // Preload templates with initial data on bind
+        preloadData: true,
+
+        // Root sightglass interface for keypaths
+        rootInterface: '.',
+
+        // Template delimiters for text bindings
+        templateDelimiters: ['{', '}'],
+
+        // Alias for index in rv-each binder
+        iterationAlias: function (modelName) {
+            return '%' + modelName + '%';
+        },
+
+        // Augment the event handler of the on-* binder
+        handler: function (target, event, binding) {
+            this.call(target, event, binding.view.models)
+        },
+
+        // Since rivets 0.9 functions are not automatically executed in expressions. If you need backward compatibilty, set this parameter to true
+        executeFunctions: false
+
+    });
+    redisDataView = rivets.bind($('#page-wrapper'), { redisInfo: {} })
+})
+
+
 function LoadData(friendlyUrl) {
-    $('#page-wrapper')
-        .load(friendlyUrl,
-        function (response, status, xhr) {
-            ShowDetails(undefined);
+    $.get(friendlyUrl,
+        function (data) {
+            redisDataView.update({ redisInfo: data });
+        })
+        .fail(function () {
+            redisDataView.update({ redisInfo: {} });
+        })
+        .always(function () {
+            setTimeout(function () { LoadData(friendlyUrl) }, 1000);
         });
 }

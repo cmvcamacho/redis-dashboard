@@ -1,18 +1,4 @@
-﻿@using Redis.Dashboard.Web.Models;
-
-@model ServersTotals
-
-@{
-    var totalMemory = (Model != null && !string.IsNullOrEmpty(Model.TotalMemory)) ? Model.TotalMemory : "-";
-    var totalKeys = (Model != null && !string.IsNullOrEmpty(Model.TotalKeys)) ? Model.TotalKeys : "-";
-    var totalClients = (Model != null && !string.IsNullOrEmpty(Model.TotalClients)) ? Model.TotalClients : "-";
-    var totalOps = (Model != null && Model.TotalOps> 0) ? Model.TotalOps + "/sec" : "-";
-    var totalNetwork = (Model != null && Model.TotalInputKbps > 0) ? Model.TotalInputKbps + " / " + Model.TotalOutputKbps : "-";
-    var totalHits = (Model != null && !string.IsNullOrEmpty(Model.TotalHits)) ? Model.TotalHits + " / " + Model.TotalMisses : "-";
-    var infoCluster = (Model != null && !string.IsNullOrEmpty(Model.InfoCluster)) ? Model.InfoCluster : "-";
-}
-
-<div class="row">
+﻿<div class="row">
     <div class="col-lg-3 col-md-6">
         <div class="panel panel-info">
             <div class="panel-heading">
@@ -21,7 +7,7 @@
                         <i class="fa fa-microchip fa-4x"></i>
                     </div>
                     <div class="col-xs-9 text-right">
-                        <div class="huge">@totalMemory</div>
+                        <div class="huge">{ redisInfo.Totals.TotalMemory }</div>
                         <div>Total Memory</div>
                     </div>
                 </div>
@@ -36,7 +22,7 @@
                         <i class="fa fa-clone fa-4x"></i>
                     </div>
                     <div class="col-xs-9 text-right">
-                        <div class="huge">@totalKeys</div>
+                        <div class="huge">{ redisInfo.Totals.TotalKeys }</div>
                         <div>Total Keys</div>
                     </div>
                 </div>
@@ -51,7 +37,7 @@
                         <i class="fa fa-gear fa-4x"></i>
                     </div>
                     <div class="col-xs-9 text-right">
-                        <div class="huge">@totalOps</div>
+                        <div class="huge">{ redisInfo.Totals.TotalOps } /sec</div>
                         <div>Ops/sec</div>
                     </div>
                 </div>
@@ -66,7 +52,7 @@
                         <i class="fa fa-users fa-4x"></i>
                     </div>
                     <div class="col-xs-9 text-right">
-                        <div class="huge">@totalClients</div>
+                        <div class="huge">{ redisInfo.Totals.TotalClients }</div>
                         <div>Total Clients</div>
                     </div>
                 </div>
@@ -81,7 +67,7 @@
                         <i class="fa fa-info fa-4x"></i>
                     </div>
                     <div class="col-xs-9 text-right">
-                        <div class="big">@infoCluster</div>
+                        <div class="big">{ redisInfo.Totals.InfoCluster }</div>
                         <div>Total Clients</div>
                     </div>
                 </div>
@@ -96,7 +82,7 @@
                         <i class="fa fa-bullseye fa-4x"></i>
                     </div>
                     <div class="col-xs-9 text-right">
-                        <div class="big">@totalHits</div>
+                        <div class="big">{ redisInfo.Totals.TotalHits } / { redisInfo.Totals.TotalMisses }</div>
                         <div>Total Hits/Misses</div>
                     </div>
                 </div>
@@ -111,7 +97,7 @@
                         <i class="fa fa-exchange fa-4x"></i>
                     </div>
                     <div class="col-xs-9 text-right">
-                        <div class="big">@totalNetwork</div>
+                        <div class="big">{ redisInfo.Totals.TotalInputKbps } / { redisInfo.Totals.TotalOutputKbps }</div>
                         <div>In/Out in kbps/sec</div>
                     </div>
                 </div>

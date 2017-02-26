@@ -1,0 +1,178 @@
+﻿
+
+<div class="col-lg-3" rv-each-server="redisInfo.Servers">
+    <div class="panel redis-server-info-panel" rv-class-panel-success="server.IsMaster" rv-class-panel-warning="server.IsSlave">
+        <div class="panel-heading">
+            <span class="pull-left"><b>{ server.Title }</b></span>
+            <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+            <div class="clearfix"></div>
+        </div>
+        <div class="panel-body">
+            <div class="table-responsive">
+                <table class="table">
+                    <tbody>
+                        <tr class="active">
+                            <td colspan="2">Server</td>
+                        </tr>
+                        <tr>
+                            <td>Version</td>
+                            <td>{ server.Server.Version }</td>
+                        </tr>
+                        <tr>
+                            <td>Mode</td>
+                            <td>{ server.Server.Mode }</td>
+                        </tr>
+                        <tr>
+                            <td>OS</td>
+                            <td>{ server.Server.OS }</td>
+                        </tr>
+                        <tr>
+                            <td>Pid</td>
+                            <td>{ server.Server.ProcessId }</td>
+                        </tr>
+                        <tr>
+                            <td>Uptime in sec</td>
+                            <td>{ server.Server.UptimeInSeconds }</td>
+                        </tr>
+                        <tr>
+                            <td>Uptime in days</td>
+                            <td>{ server.Server.UptimeInDays }</td>
+                        </tr>
+                        <tr class="active">
+                            <td colspan="2">Clients</td>
+                        </tr>
+                        <tr>
+                            <td>Connected clients</td>
+                            <td>{ server.Clients.ConnectedClients }</td>
+                        </tr>
+                        <tr>
+                            <td>Blocked clients</td>
+                            <td>{ server.Clients.BlockedClients }</td>
+                        </tr>
+                        <tr class="active">
+                            <td colspan="2">Memory</td>
+                        </tr>
+                        <tr>
+                            <td>Used mem</td>
+                            <td>{ server.Memory.UsedMemoryHuman }</td>
+                        </tr>
+                        <tr>
+                            <td>Used mem peak</td>
+                            <td>{ server.Memory.UsedMemoryPeakHuman }</td>
+                        </tr>
+                        <tr>
+                            <td>Fragmentation ratio</td>
+                            <td>{ server.Memory.FragmentationRatio }</td>
+                        </tr>
+                        <tr class="active">
+                            <td colspan="2">Stats</td>
+                        </tr>
+                        <tr>
+                            <td>Total conn received</td>
+                            <td>{ server.Stats.TotalConnectionsReceived }</td>
+                        </tr>
+                        <tr>
+                            <td>Total cmd processed</td>
+                            <td>{ server.Stats.TotalCommandsProcessed }</td>
+                        </tr>
+                        <tr>
+                            <td>Ops per sec</td>
+                            <td>{ server.Stats.InstantaneousOpsPerSec }</td>
+                        </tr>
+                        <tr>
+                            <td>Input bytes</td>
+                            <td>{ server.Stats.TotalNetInputBytes }</td>
+                        </tr>
+                        <tr>
+                            <td>Output bytes</td>
+                            <td>{ server.Stats.TotalNetOutputBytes }</td>
+                        </tr>
+                        <tr>
+                            <td>Input kbps</td>
+                            <td>{ server.Stats.InstantaneousInputKbps }</td>
+                        </tr>
+                        <tr>
+                            <td>output kbps</td>
+                            <td>{ server.Stats.InstantaneousOutputKbps }</td>
+                        </tr>
+                        <tr>
+                            <td>Rejected conns</td>
+                            <td>{ server.Stats.RejectedConnections }</td>
+                        </tr>
+                        <tr>
+                            <td>Expired keys</td>
+                            <td>{ server.Stats.ExpiredKeys }</td>
+                        </tr>
+                        <tr>
+                            <td>Evicted keys</td>
+                            <td>{ server.Stats.EvictedKeys }</td>
+                        </tr>
+                        <tr>
+                            <td>Keyspace hits</td>
+                            <td>{ server.Stats.KeyspaceHits }</td>
+                        </tr>
+                        <tr>
+                            <td>Keyspace misses</td>
+                            <td>{ server.Stats.KeyspaceMisses }</td>
+                        </tr>
+                        <tr>
+                            <td>PubSub channels</td>
+                            <td>{ server.Stats.PubsubChannels }</td>
+                        </tr>
+                        <tr>
+                            <td>PubSub patterns</td>
+                            <td>{ server.Stats.PubsubPatterns }</td>
+                        </tr>
+                        <tr class="collapsed active">
+                            <td colspan="2">Replication</td>
+                        </tr>
+                        <tr>
+                            <td>Role</td>
+                            <td>{ server.Replication.Role }</td>
+                        </tr>
+                        <tr>
+                            <td>Connected slaves</td>
+                            <td>{ server.Replication.ConnectedSlaves }</td>
+                        </tr>
+                        <tr>
+                            <td>Repl backlog active</td>
+                            <td>{ server.Replication.ReplBacklogActive }</td>
+                        </tr>
+                        <tr>
+                            <td>Repl backlog size</td>
+                            <td>{ server.Replication.ReplBacklogSize }</td>
+                        </tr>
+
+                        <tr class="active">
+                            <td colspan="2">CPU</td>
+                        </tr>
+                        <tr>
+                            <td>Used cpu sys</td>
+                            <td>{ server.CPU.UsedCpuUser }</td>
+                        </tr>
+                        <tr>
+                            <td>Used cpu user</td>
+                            <td>{ server.CPU.UsedCpuSys }</td>
+                        </tr>
+                        <tr class="collapsed active">
+                            <td colspan="2">Cluster</td>
+                        </tr>
+                        <tr>
+                            <td>Enabled</td>
+                            <td>{ server.Cluster.Enabled }</td>
+                        </tr>
+                        <tr class="active">
+                            <td colspan="2">Keyspace</td>
+                        </tr>
+                        <tr rv-each-keyspace="server.Keyspace">
+                            <td>{ keyspace.Database }</td>
+                            <td>keys={ keyspace.Keys },expires={ keyspace.Expires },avg_ttl={ keyspace.AvgTTL }</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+

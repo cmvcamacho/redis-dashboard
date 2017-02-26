@@ -195,6 +195,7 @@
     <Content Include="Scripts\respond.matchmedia.addListener.js" />
     <Content Include="Scripts\respond.matchmedia.addListener.min.js" />
     <Content Include="Scripts\respond.min.js" />
+    <Content Include="Scripts\RivetJs\rivets.bundled.min.js" />
     <Content Include="Scripts\site.js" />
     <Content Include="Scripts\sb-admin-2.js" />
     <Content Include="Scripts\sb-admin-2.min.js" />
@@ -214,8 +215,7 @@
     <Content Include="Views\Shared\Header.cshtml" />
     <Content Include="Views\Shared\Menu.cshtml" />
     <Content Include="Views\Shared\Totals.cshtml" />
-    <Content Include="Views\LoadData\ServerInfo.cshtml" />
-    <Content Include="Views\LoadData\Index.cshtml" />
+    <Content Include="Views\Shared\ServerInfo.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

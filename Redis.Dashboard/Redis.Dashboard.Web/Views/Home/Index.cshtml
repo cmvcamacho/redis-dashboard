@@ -10,14 +10,12 @@
             <div class="col-lg-12">
                 <div class="page-header">
                     <h2 style="display: inline;">@Model.ActiveServerGroup.GroupTitle - @Model.ActiveServerGroup.ServerGroup.Title</h2>
-                    <button class="btn btn-link server-details">
-                        <i class="fa fa-arrows-alt"></i> more details
-                    </button>
                 </div>
             </div>
         </div>
-        @Html.Partial("Totals", new ServersTotals())
+        @Html.Partial("Totals")
         <div class="row">
+            @Html.Partial("ServerInfo")
         </div>
 
         <script>
