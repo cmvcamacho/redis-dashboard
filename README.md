@@ -11,7 +11,8 @@ The installation scripts allow you to install this on remote machines. The steps
 * Compile solution with VS2015 (only needed to restore the nuget packages)
 * Configure installation properties file ".\setup\site\config\production.properties"
 * Open a Command Prompt with Administrator rights and run the command ".\setup\site\Install.bat production"
-* The 'production' keyword maps to the file ".\setup\site\config\production.properties", this file have a lot of configurable properties with meaningful names so it should be easy to configure them
+* The 'production' keyword maps to the file ".\setup\site\config\production.properties", this file have a lot of configurable properties with meaningful names so it should be easy to configure them.
+
 Note:
 You can have multiple configuration files, one for each different environment you need.
 
