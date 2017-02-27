@@ -235,9 +235,6 @@
     <Content Include="Scripts\sb-admin-2.min.js" />
     <Content Include="Scripts\_references.js" />
     <Content Include="Web.config" />
-    <Content Include="Web.Release.config">
-      <DependentUpon>Web.config</DependentUpon>
-    </Content>
     <Content Include="Web.production.config">
       <DependentUpon>Web.config</DependentUpon>
     </Content>
