@@ -1,0 +1,124 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Project ToolsVersion="4.0" DefaultTargets="Default" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+	<!-- MSBuild Extensions -->
+	<Import Project=".\..\MSBuild.Extension.Pack.4.0.12.0\Binaries\MSBuild.ExtensionPack.tasks"/>
+	<Import Project="MSBuild.Utils.tasks"/>
+
+	<!-- Custom Properties -->
+	<PropertyGroup>
+		<MachineName></MachineName>
+		<ServiceName></ServiceName>
+		<ServiceDisplayName></ServiceDisplayName>
+		<ServiceExe></ServiceExe>
+		<SourceDirectory></SourceDirectory>
+		<DestinationDirectory></DestinationDirectory>
+		<ServiceUser>LocalSystem</ServiceUser>
+		<ServicePass></ServicePass>
+	</PropertyGroup>
+	
+	<!-- Diagnostic output of properties, and mandatory checks -->
+	<Target Name="CheckParams" >
+		<Message Text="******************************"/>
+		<Message Text="RecreateJob=$(RecreateJob)"/>
+		<Message Text="JobServerName=$(JobServerName)"/>
+		<Message Text="JobInstallDir=$(JobInstallDir)"/>
+		<Message Text="JobName=$(JobName)"/>
+		<Message Text="JobCommand=$(JobCommand)"/>
+		<Message Text="JobArgs=$(JobArgs)"/>
+		<Message Text="JobXmlConfig=$(JobXmlConfig)"/>
+		<Message Text="JobLogonUser=$(JobLogonUser)"/>
+		<Message Text="JobLogonUserPwd=$(JobLogonUserPwd)"/>
+
+		<Error Text ="Not all properties were supplied."
+		 Condition="$([System.String]::IsNullOrEmpty($(JobServerName))) Or 
+			$([System.String]::IsNullOrEmpty($(JobInstallDir))) Or 
+			$([System.String]::IsNullOrEmpty($(JobName))) Or 
+			$([System.String]::IsNullOrEmpty($(JobCommand))) Or 
+			$([System.String]::IsNullOrEmpty($(JobXmlConfig)))"/> 
+	</Target>
+	
+		
+	<Target Name="CreateScheduledTask">
+		<CallTarget Targets="CheckParams" ContinueOnError="false"/>
+
+		<!-- grant permissions to "Logon as a batch job" -->
+		<Message Text="grant permissions to $(JobLogonUser) to 'Logon as a batch job'"/>
+		<Exec Command="$(ExternalBinariesPath)\ntrights\ntrights.exe -m \\$(JobServerName) -u &quot;$(JobLogonUser)&quot; +r SeBatchLogonRight" 
+			ConsoleToMSBuild="true" IgnoreExitCode="true" ContinueOnError="true"> 
+			<Output TaskParameter="ConsoleOutput" PropertyName="OutputOfExec" />
+		</Exec>
+
+		
+		<!-- update job configuration xml to the correct parameters-->
+		<PropertyGroup>
+			<XmlConfigFile>.\tmp.xml</XmlConfigFile>
+		</PropertyGroup>
+		<Copy SourceFiles ="$(JobXmlConfig)" DestinationFiles="$(XmlConfigFile)"/>
+		<XmlPoke
+	  	    Namespaces="&lt;Namespace Prefix='x' Uri='http://schemas.microsoft.com/windows/2004/02/mit/task'/&gt;"
+     		XmlInputPath="$(XmlConfigFile)"
+			Query="/x:Task/x:Actions/x:Exec/x:Command"
+			Value="$(JobCommand)"/>
+		<XmlPoke
+			Condition="!$([System.String]::IsNullOrEmpty($(JobArgs)))" 
+	  	    Namespaces="&lt;Namespace Prefix='x' Uri='http://schemas.microsoft.com/windows/2004/02/mit/task'/&gt;"
+			XmlInputPath="$(XmlConfigFile)"
+			Query="/x:Task/x:Actions/x:Exec/x:Arguments"
+			Value="$(JobArgs)"/>
+
+        			
+		<Exec Command="schtasks /S $(JobServerName) /Query /TN  &quot;$(JobName)&quot;" 
+					ConsoleToMSBuild="true" IgnoreExitCode="true" ContinueOnError="true">
+			<Output TaskParameter="ConsoleOutput" PropertyName="OutputOfExec" />
+		</Exec>
+		
+		<PropertyGroup>
+			<JobExists Condition="$(OutputOfExec.Contains('ERROR'))">false</JobExists>
+			<JobExists Condition="!$(OutputOfExec.Contains('ERROR'))">true</JobExists>
+		</PropertyGroup>
+		
+		<Message Text="Scheduled Task $(JobName) exists on $(JobServerName); Not recreating" Condition="$(JobExists) And !$(RecreateJob)"/>
+		<Message Text="Scheduled Task $(JobName) exists on $(JobServerName); Recreating"  Condition="$(JobExists) And $(RecreateJob)"/>
+		<Message Text="Scheduled Task $(JobName) does not exist on $(JobServerName); Creating"  Condition="!$(JobExists)"/>
+		
+		<Exec Command="schtasks /S $(JobServerName) /Delete /F /TN  &quot;$(JobName)&quot;" Condition="$(JobExists) And $(RecreateJob)" 
+					ConsoleToMSBuild="true" ContinueOnError="false">
+			<Output TaskParameter="ConsoleOutput" PropertyName="OutputOfDelete" />
+		</Exec>
+		
+		<Exec Command="schtasks /S $(JobServerName) /Create /F /TN  &quot;$(JobName)&quot; /RU &quot;$(JobLogonUser)&quot; /RP &quot;$(JobLogonUserPwd)&quot; /XML &quot;$(XmlConfigFile)&quot; /IT" 
+				Condition="!$(JobExists) Or $(RecreateJob)"
+				ConsoleToMSBuild="true" ContinueOnError="false">
+			<Output TaskParameter="ConsoleOutput" PropertyName="OutputOfCreate" />
+		</Exec>
+
+		<Delete Files="$(XmlConfigFile)" TreatErrorsAsWarnings="true" />
+	</Target>
+
+	<Target Name="CheckIfProcessIsRunning">
+		<Message Text="Check if process $(ProcessName) is currently running on $(ServerName) - Retry #$(Retry)"/>
+
+		<MSBuild.ExtensionPack.Computer.Process TaskAction="CheckRunning" ProcessName="$(ProcessName)" MachineName="$(ServerName)" >
+            <Output PropertyName="IsRunning" TaskParameter="IsRunning"/>
+        </MSBuild.ExtensionPack.Computer.Process>
+		
+		<Message Text="Process $(ProcessName) not running on $(ServerName)" Condition="!$(IsRunning)"/>
+		<Message Text="Process $(ProcessName) is running on $(ServerName) and will be terminated" Condition="$(IsRunning) And $(TerminateProcessIfRunning)"/>
+		<Message Text="Process $(ProcessName) is running on $(ServerName), will retry $(MaxRetries) times with $(SleepTimeout)s of interval" Condition="$(IsRunning) And !$(TerminateProcessIfRunning)"/>
+		
+		<MSBuild.ExtensionPack.Computer.Process TaskAction="Terminate" ProcessName="$(ProcessName)" MachineName="$(ServerName)" 
+			ContinueOnError="true"
+			Condition="$(IsRunning) And $(TerminateProcessIfRunning)"/>
+		
+		<MSBuild.ExtensionPack.Framework.Thread TaskAction="Sleep" Timeout="$(SleepTimeout)" Condition="$(IsRunning) And !$(TerminateProcessIfRunning)"/>
+		 
+		<MSBuild.ExtensionPack.Science.Maths TaskAction="Add" Numbers="$(Retry);1">
+            <Output PropertyName="NewRetry" TaskParameter="Result"/>
+        </MSBuild.ExtensionPack.Science.Maths>		 
+		<MSBuild Projects="$(MSBuildProjectFile)"
+			Condition="$(IsRunning) And $(Retry) &lt; $(MaxRetries) And !$(TerminateProcessIfRunning)"
+			Properties="ServerName=$(ServerName);ProcessName=$(ProcessName);Retry=$(NewRetry)"
+			Targets="CheckIfProcessIsRunning">
+		</MSBuild>		
+	</Target>	
+</Project>

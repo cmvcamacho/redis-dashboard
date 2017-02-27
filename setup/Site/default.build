@@ -1,0 +1,36 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Project ToolsVersion="4.0" DefaultTargets="Default" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+	
+	<PropertyGroup>
+		<Environment>local</Environment>
+		<AppVersion>0.0.0.0</AppVersion>
+		<ExternalBinariesPath>..\..\Tools</ExternalBinariesPath>
+	</PropertyGroup>
+	
+	<Import Condition="exists('$(Environment)')" 
+			Project="$(Environment)"/>
+	<Import Condition="exists('$(MSBuildProjectDirectory)\$(Environment)')" 
+			Project="$(MSBuildProjectDirectory)\$(Environment)"/>
+	<Import Condition="exists('$(MSBuildProjectDirectory)\Config\$(Environment)')" 
+			Project="$(MSBuildProjectDirectory)\Config\$(Environment)"/>
+	<Import Condition="exists('$(MSBuildProjectDirectory)\Config\$(Environment).properties')" 
+			Project="$(MSBuildProjectDirectory)\Config\$(Environment).properties"/>
+	
+	<Import Project="$(ExternalBinariesPath)\MSBuild.Extension.Pack.4.0.12.0\Binaries\MSBuild.ExtensionPack.tasks"/>
+	<Import Project="$(ExternalBinariesPath)\MSBuildGlobalFiles\MSBuild.Utils.tasks"/>
+	<Import Project="$(ExternalBinariesPath)\MSBuildGlobalFiles\Website.build"/>
+		
+	<PropertyGroup>
+		<BuildDir Condition="'$(BuildDir)' == ''">$(SourceDirectory)\..\build\Site</BuildDir>
+		<PackageFile Condition="'$(PackageFile)' == ''">$(BuildDir)\..\package_$(AppVersion).zip</PackageFile>
+	</PropertyGroup>
+	
+	<Target Name="PublishHost">
+		<CallTarget Condition="$(DeployToIIS)" Targets="ManageIIS" ContinueOnError="false"/>
+		<CallTarget Condition="$(Environment) != 'local'" Targets="CreateDeployPackage" ContinueOnError="false"/>
+		<MSBuild.ExtensionPack.Framework.Thread TaskAction="Sleep" Timeout="1000"/>
+		<CallTarget Condition="$(Environment) != 'local'" Targets="UnzipDeployPackage" ContinueOnError="false"/>
+		<CallTarget Condition="$(Environment) != 'local'" Targets="PublishSite" ContinueOnError="false"/>
+	</Target>
+	
+</Project>

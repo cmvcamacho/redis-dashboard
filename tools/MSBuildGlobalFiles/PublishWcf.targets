@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Project ToolsVersion="4.0" DefaultTargets="Default" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+	<!-- MSBuild Extensions -->
+	<Import Project=".\..\MSBuild.Extension.Pack.4.0.12.0\Binaries\MSBuild.ExtensionPack.tasks"/>
+	<!-- Custom Properties -->
+	<PropertyGroup>
+		<SourceDirectory></SourceDirectory>
+		<DestinationDirectory></DestinationDirectory>
+	</PropertyGroup>
+	<!-- Diagnostic output of properties, and mandatory checks -->
+	<Target Name="CheckParams" >
+		<Message Text="SourceDirectory=$(SourceDirectory)"/>
+		<Message Text="DestinationDirectory=$(DestinationDirectory)"/>
+		<Error Text ="Not all properties were supplied."
+		Condition="$([System.String]::IsNullOrEmpty($(SourceDirectory))) Or $([System.String]::IsNullOrEmpty($(DestinationDirectory)))"/>
+	</Target>
+
+
+	<Target Name="Default">
+		<CallTarget Targets="CheckParams" ContinueOnError="false"/>
+		<!-- Clean up target first -->
+		<ItemGroup>
+			<WebFilesToDelete Include="$(DestinationDirectory)\**\*"/>
+		</ItemGroup>
+		<Delete Files="@(WebFilesToDelete)" TreatErrorsAsWarnings="true" />
+		<RemoveDir Directories="$(DestinationDirectory)" ContinueOnError="true"/>
+		
+		<!-- Copy app config AS web config for hosting in IIS -->
+		<Copy Condition="Exists('$(SourceDirectory)\App.Config') And !Exists('$(SourceDirectory)\Web.Config')"
+				SourceFiles="$(SourceDirectory)\App.Config"
+				DestinationFiles="$(DestinationDirectory)\Web.config"/>
+		
+		<!-- Copy web config if app config does not exist -->
+		<Copy Condition="Exists('$(SourceDirectory)\Web.Config') "
+			SourceFiles="$(SourceDirectory)\Web.Config"
+			DestinationFiles="$(DestinationDirectory)\Web.config"/>
+		
+		<!-- Copy .svc files-->
+		<ItemGroup>
+			<SvcFilesToCopy Include="$(SourceDirectory)\**\*.svc;$(SourceDirectory)\**\Global.asax;"/>
+		</ItemGroup>
+		<MSBuild.ExtensionPack.Framework.MsBuildHelper TaskAction="GetItemCount" InputItems1="@(SvcFilesToCopy)">
+			<Output TaskParameter="ItemCount" PropertyName="FileCount"/>
+		</MSBuild.ExtensionPack.Framework.MsBuildHelper>
+		<Error Text="Error, there were no files to copy!" Condition="$(FileCount)==0"/>
+		<Copy SourceFiles="@(SvcFilesToCopy)"
+			DestinationFolder="$(DestinationDirectory)\%(RecursiveDir)"/>
+
+			
+		<!-- Copy binaries  -->
+		<CreateItem Include=
+			"$(SourceDirectory)\**\*.exe;
+			$(SourceDirectory)\Bin\**\*.dll;
+			$(SourceDirectory)\Bin\**\*.config">
+			<Output TaskParameter="Include" ItemName="BinariesAndOtherFilesToCopy" />
+		</CreateItem>
+		<MSBuild.ExtensionPack.Framework.MsBuildHelper TaskAction="GetItemCount" InputItems1="@(BinariesAndOtherFilesToCopy)">
+			<Output TaskParameter="ItemCount" PropertyName="FileCount"/>
+		</MSBuild.ExtensionPack.Framework.MsBuildHelper>
+		<Error Text="Error, there were no files to copy!" Condition="$(FileCount)==0"/>
+		<Copy
+			SourceFiles ="@(BinariesAndOtherFilesToCopy)"
+			DestinationFolder="$(DestinationDirectory)\Bin\%(RecursiveDir)"/>
+		
+		<!-- productionify® config-->
+		<!-- This step removes the publishing of endpoint information, improving security and hopefully mimicing what 
+		will happen when services go live.-->
+		<MSBuild.ExtensionPack.Xml.XmlFile
+			TaskAction="RemoveElement"
+			File="$(DestinationDirectory)\Web.config"
+			XPath="/configuration/system.serviceModel/services/service/endpoint[@address='mex']"/>
+		<MSBuild.ExtensionPack.Xml.XmlFile
+			TaskAction="UpdateAttribute"
+			File="$(DestinationDirectory)\Web.config"
+			XPath="/configuration/system.serviceModel/behaviors/serviceBehaviors/behavior/serviceMetadata"
+			Key="httpGetEnabled"
+			Value="true"/>
+		<MSBuild.ExtensionPack.Xml.XmlFile
+			TaskAction="UpdateAttribute"
+			File="$(DestinationDirectory)\Web.config"
+			XPath="/configuration/system.serviceModel/behaviors/serviceBehaviors/behavior/serviceDebug"
+			Key="includeExceptionDetailInFaults"
+			Value="false"/>
+	</Target>
+</Project>
+

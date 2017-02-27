@@ -186,8 +186,11 @@ return cjson.encode(keyAttrs)";
             if(!json.IsNull)
             {
                 var listResults = JsonConvert.DeserializeObject<List<SearchResult>>(json.ToString());
-                listResults.ForEach(r => r.Server = endpoint.ToString());
-                results.AddRange(listResults);
+                if(listResults != null)
+                { 
+                    listResults.ForEach(r => r.Server = endpoint.ToString());
+                    results.AddRange(listResults);
+                }
             }
         }
 

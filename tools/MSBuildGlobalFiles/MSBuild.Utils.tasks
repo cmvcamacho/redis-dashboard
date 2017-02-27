@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <!-- ============== LocalPath to UNC Path ============== -->
+	<!-- translates a machine name and local path to a UNC path, primarily for the task of copying files -->
+	<!-- Note that this will rely on the calling process having access to $ dollar shares. -->
+	<UsingTask TaskName="LocalPathToUncPath" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll">
+		<ParameterGroup>
+			<MachineName ParameterType="System.String" Required="true"/>
+			<LocalPath ParameterType="System.String" Required="true"/>
+			<UncPath ParameterType="System.String" Required="false" Output="true"/>
+		</ParameterGroup>
+		<Task>
+			<Using Namespace="System"/>
+			<Using Namespace="System.IO"/>
+			<Code Type="Fragment" Language="cs">
+				<![CDATA[
+					string uncPath = this.LocalPath;
+					if (this.MachineName.ToUpper() != "LOCALHOST")
+					{
+						var parts = this.LocalPath.Split(new[]{@":\"}, StringSplitOptions.None);
+						uncPath = string.Format(@"\\{0}\{1}$\{2}",
+							this.MachineName,
+							parts[0],
+							parts[1]);
+						this.Log.LogMessage(string.Format("Generated path to remote machine: {0}", uncPath));
+					}
+					this.UncPath = uncPath;
+					return true;
+				]]>
+			</Code>
+		</Task>
+	</UsingTask>
+
+	<!-- ============== GetDate ============== -->
+	<!-- Gets the current date/time based on a format string -->
+	<UsingTask TaskName="GetDate" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll">
+		<ParameterGroup>
+			<FormatString ParameterType="System.String" Required="true"/>
+			<DateString ParameterType="System.String" Required="false" Output="true"/>
+		</ParameterGroup>
+		<Task>
+			<Using Namespace="System"/>
+			<Using Namespace="System.IO"/>
+			<Code Type="Fragment" Language="cs">
+				<![CDATA[
+					this.Log.LogMessage(string.Format("Getting current date with format string: {0}", this.FormatString));
+					this.DateString = DateTime.Now.ToString(this.FormatString, null);
+					this.Log.LogMessage(string.Format("{0}", this.DateString));
+					return true;
+				]]>
+			</Code>
+		</Task>
+	</UsingTask>
+
+	<Import Project="..\MSBuild.Extension.Pack.4.0.12.0\Binaries\MSBuild.ExtensionPack.tasks" Condition="'$(TasksTargetsImported)' == ''" />
+	
+	<Target Name="Backup">
+		<Message Text="*** BackupBeforeDeploy=$(BackupBeforeDeploy) ***"/>
+		<Message Text="*** DestinationDirectory=$(DestinationDirectory) ***"/>
+		<Message Text="*** DestinationBackup=$(DestinationBackup) ***"/>
+
+		<GetDate FormatString="yyyyMMdd_HHmmss">
+			<Output PropertyName="nowStr" TaskParameter="DateString"/>
+		</GetDate>
+		<PropertyGroup>
+			<BackupFileName>Backup_$(nowStr)_$(USERNAME).zip</BackupFileName>
+		</PropertyGroup>
+
+		
+		<!-- backup -->
+		<ItemGroup>
+			<FilesToZip 
+				Include="$(DestinationDirectory)\**\*"
+				/>
+		</ItemGroup>
+		<MSBuild.ExtensionPack.Framework.MsBuildHelper TaskAction="GetItemCount" InputItems1="@(FilesToZip)">
+			<Output TaskParameter="ItemCount" PropertyName="BackupFileCount"/>
+		</MSBuild.ExtensionPack.Framework.MsBuildHelper>
+		<!--Message Text="*** BackupFileCount=$(BackupFileCount) ***"/-->
+
+		<MakeDir Directories="$(DestinationBackup)" Condition="!Exists('$(DestinationBackup)')" />
+		<Message Condition="$(BackupBeforeDeploy) And $(BackupFileCount)>1" Text="Will backup to here $(DestinationBackup)"/>
+		<Message Condition="!($(BackupBeforeDeploy) And $(BackupFileCount)>1)" Text="Nothing to backup..."/>
+		<MSBuild.ExtensionPack.Compression.Zip 
+				Condition="$(BackupBeforeDeploy) And $(BackupFileCount)>1"
+				TaskAction="Create" CompressFiles="@(FilesToZip)" 
+				RemoveRoot="$(DestinationDirectory)"
+				ZipFileName="$(DestinationBackup)\$(BackupFileName)"/>
+	</Target>	
+
+	<Target Name="AddEnvironmentFilesToZip">
+		<Message Text="*** SourceFolder=$(SourceFolder) ***"/>
+		<Message Text="*** WorkingFolder=$(WorkingFolder) ***"/>
+		<Message Text="*** ExtraEnvFolder=$(ExtraEnvFolder) ***"/>
+		<Message Text="*** ExtraEnvFiles=$(ExtraEnvFiles) ***"/>
+
+		<ItemGroup>
+			<ExtraEnvFilesToCopyPattern Include="$(ExtraEnvFolder)$(ExtraEnvFiles);"/>
+		</ItemGroup>		
+		<CreateItem Include="@(ExtraEnvFilesToCopyPattern->'$(SourceFolder)\%(Identity)')"> 
+			<Output TaskParameter="Include" ItemName="ExtraEnvFilesToCopy" /> 
+		</CreateItem> 		
+
+		<Message Condition="'$(ExtraEnvFiles)' != ''" 
+					Text="*** Copy environment files $(SourceFolder)\$(ExtraEnvFolder)$(ExtraEnvFiles) ***"/>
+		<Copy Condition="'$(ExtraEnvFiles)' != ''" 
+				SourceFiles="%(ExtraEnvFilesToCopy.FullPath)"
+				DestinationFiles="$(WorkingFolder)\$(ExtraEnvFolder)%(Filename)%(Extension)"  />	
+	</Target>	
+	
+	<Target Name="CopyEnvironmentFiles">
+		<Message Text="*** DestinationFile=$(DestinationFile) ***"/>
+		<Message Text="*** FileToCopy=$(FileToCopy) ***"/>
+		<Message Text="*** ExtraEnvFolder=$(ExtraEnvFolder) ***"/>
+		<Message Text="*** ExtraEnvFiles=$(ExtraEnvFiles) ***"/>
+		<Message Text="*** WorkingFolder=$(WorkingFolder) ***"/>
+
+		<!-- Copy environment config as web.config for hosting in IIS -->
+		<Message Condition="'$(FileToCopy)' != '' And Exists('$(WorkingFolder)\$(ExtraEnvFolder)$(FileToCopy)')"
+					Text="*** Copy $(ExtraEnvFolder)$(FileToCopy) to $(environment) $(ExtraEnvFolder)$(DestinationFile) ***"/>
+		<Copy Condition="'$(FileToCopy)' != '' And Exists('$(WorkingFolder)\$(ExtraEnvFolder)$(FileToCopy)')"
+				SourceFiles="$(WorkingFolder)\$(ExtraEnvFolder)$(FileToCopy)"
+				DestinationFiles="$(WorkingFolder)\$(ExtraEnvFolder)$(DestinationFile)"/>
+	
+		<!-- remove environment config files -->
+		<Message Condition="'$(ExtraEnvFiles)' != ''" 
+					Text="*** Remove extra environment files $(WorkingFolder)\$(ExtraEnvFolder)$(ExtraEnvFiles) ***"/>
+		
+		<ItemGroup>
+			<ExtraEnvFilesToRemovePattern Include="$(ExtraEnvFolder)$(ExtraEnvFiles);"/>
+		</ItemGroup>		
+		<CreateItem Include="@(ExtraEnvFilesToRemovePattern->'$(WorkingFolder)\%(Identity)')"> 
+			<Output TaskParameter="Include" ItemName="ExtraEnvFilesToRemove" /> 
+		</CreateItem> 		
+		<Delete Condition="'$(ExtraEnvFiles)' != ''" Files="%(ExtraEnvFilesToRemove.FullPath)"/>	
+	</Target>	
+</Project>

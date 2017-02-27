@@ -1,0 +1,260 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Project ToolsVersion="4.0" DefaultTargets="Default" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+	
+	<Target Name="BuildSolution">
+		<MSBuild Projects="$(ProjectToBuild)"
+				Properties="Configuration=$(Configuration);Platform=$(Platform);Verbosity=Minimal;PreBuildEvent=;VisualStudioVersion=14.0;" 
+				Targets="Clean;Rebuild"/>
+	</Target>
+	
+	<Target Name="PublishSite">
+		<!-- Copy to local folder -->
+		<MSBuild Projects="$(MSBuildProjectFile)" Condition="'%(WebServerMachines.LocalInstallDir)' != ''"
+			Properties="BuildDir=$(BuildDir);
+				ServerName=%(WebServerMachines.Identity);
+				LocalInstallDir=%(WebServerMachines.LocalInstallDir);
+				LocalBackupBeforeDeploy=%(WebServerMachines.LocalBackupBeforeDeploy);
+				LocalBackupTo=%(WebServerMachines.LocalBackupTo);
+				LocalSiteName=%(WebServerMachines.SiteName);
+				LocalSiteBindingHost=%(WebServerMachines.SiteBindingHost);
+				LocalSiteBindingPort=%(WebServerMachines.SiteBindingPort);"
+			Targets="PublishSiteLocalServer"/>
+
+		<!-- Copy to shared folder -->
+		<MSBuild Projects="$(MSBuildProjectFile)" Condition="$(BackupBeforeDeploy) And '$(InstallDir)' != ''"
+			Properties="DestinationDirectory=$(InstallDir);BuildDir=$(BuildDir);BackupToDir=$(BackupTo)"
+			Targets="PublishSiteCopyFiles">
+		</MSBuild>
+		<MSBuild Projects="$(MSBuildProjectFile)" Condition="!$(BackupBeforeDeploy) And '$(InstallDir)' != ''"
+			Properties="DestinationDirectory=$(InstallDir);BuildDir=$(BuildDir);BackupToDir="
+			Targets="PublishSiteCopyFiles">
+		</MSBuild>
+	</Target>
+	<Target Name="PublishSiteLocalServer">
+		<Message Text="*** ServerName=$(ServerName) ***"/>
+		<Message Text="*** LocalInstallDir=$(LocalInstallDir) ***"/>
+		<Message Text="*** LocalBackupBeforeDeploy=$(LocalBackupBeforeDeploy) ***"/>
+		<Message Text="*** LocalBackupTo=$(LocalBackupTo) ***"/>
+		<Message Text="*** BuildDir=$(BuildDir) ***"/>
+		<Message Text="*** LocalSiteName=$(LocalSiteName) ***"/>
+		<Message Text="*** LocalSiteBindingHost=$(LocalSiteBindingHost) ***"/>
+		<Message Text="*** LocalSiteBindingPort=$(LocalSiteBindingPort) ***"/>
+		
+		<LocalPathToUncPath MachineName="$(ServerName)" LocalPath="$(LocalInstallDir)" Condition="'$(LocalInstallDir)' != ''"> 
+			<Output TaskParameter="UncPath" PropertyName="ServerLocalInstallDir" />
+		</LocalPathToUncPath>
+		<LocalPathToUncPath MachineName="$(ServerName)" LocalPath="$(LocalBackupTo)" Condition="'$(LocalBackupTo)' != '' And $(LocalBackupBeforeDeploy)"> 
+			<Output TaskParameter="UncPath" PropertyName="ServerLocalBackupTo" />
+		</LocalPathToUncPath>
+		<Message Text="*** ServerLocalInstallDir=$(ServerLocalInstallDir) ***"/>
+		<Message Text="*** ServerLocalBackupTo=$(ServerLocalBackupTo) ***"/>
+
+		<!-- Copy files to local folder -->
+		<Message Text="*** Deploying locally ***"/>
+		<MSBuild Projects="$(MSBuildProjectFile)"
+			Properties="DestinationDirectory=$(ServerLocalInstallDir);BuildDir=$(BuildDir);BackupToDir=$(ServerLocalBackupTo)"
+			Targets="PublishSiteCopyFiles">
+		</MSBuild>		
+	</Target>
+	<Target Name="PublishSiteCopyFiles">
+		<Message Text="*** DestinationDirectory=$(DestinationDirectory) ***"/>
+		<Message Text="*** BuildDir=$(BuildDir) ***"/>
+		<Message Text="*** BackupToDir=$(BackupToDir) ***"/>
+
+		<ConvertToAbsolutePath Paths="$(BuildDir)"> 
+		  <Output TaskParameter="AbsolutePaths" PropertyName="BuildDirectory"/>
+		</ConvertToAbsolutePath>
+		
+		<!-- Backup -->
+		<MSBuild Projects="$(ExternalBinariesPath)\MSBuildGlobalFiles\MSBuild.Utils.tasks"
+			Condition="$(Environment) != 'local' And '$(BackupToDir)' != ''" 
+			Properties="DestinationDirectory=$(DestinationDirectory);DestinationBackup=$(BackupToDir);BackupBeforeDeploy=true"
+			Targets="Backup"/>
+	
+		<!-- Copy to destination folder -->
+		<Message Text="*** Copy to DestinationDirectory=$(DestinationDirectory) ***"/>
+		<ItemGroup>
+			<FoldersToExcludeWhenDeploying Condition="$(Environment) == 'production'" Include="$(BuildDirectory)\html\**\*.*;$(BuildDirectory)\XML\**\*.*;$(BuildDirectory)\XSLT\**\*.*;" />
+			<SourceFiles Include="$(BuildDirectory)\**\*.*;" Exclude="@(FoldersToExcludeWhenDeploying)"/>
+		</ItemGroup>
+		
+		<Copy SourceFiles="@(SourceFiles)" 
+			DestinationFiles="@(SourceFiles->'$(DestinationDirectory)\%(RecursiveDir)%(Filename)%(Extension)')" 
+		    SkipUnchangedFiles="true" />
+	</Target>
+
+	<Target Name="ManageIIS" >
+		<MSBuild Projects="$(MSBuildProjectFile)"
+			Properties="ServerName=%(WebServerMachines.Identity)"
+			Targets="CreateSiteInServer">
+		</MSBuild>
+	</Target>
+	<Target Name="CreateSiteInServer" >
+		<Message Text="*** SERVER=$(ServerName) ***"/>
+
+		<!--create site-->
+		<MSBuild Projects="$(MSBuildProjectFile)"
+			Condition="'%(Site.ServerName)' == '' Or $(ServerName) == %(Site.ServerName)"
+			Properties="SleepTimeout=$(SleepTimeout);MachineName=$(ServerName);SiteName=%(Site.Identity);SitePath=%(Site.SitePath);RecreateSite=%(Site.RecreateSite);AppPoolUser=%(Site.AppPoolUser);AppPoolPass=%(Site.AppPoolPass);AppPoolName=%(Site.AppPoolName);HttpPort=%(Site.HttpPort);CreateHttpBinding=%(Site.CreateHttpBinding);HttpBindingHostName=%(Site.HttpBindingHostName);Enable32BitAppOnWin64=%(Site.Enable32BitAppOnWin64);AppPipelineMode=%(Site.AppPipelineMode);RapidFailProtection=%(Site.RapidFailProtection);PeriodicRestartPrivateMemory=%(Site.PeriodicRestartPrivateMemory);ConnectAsUserUsingAppPoolUser=%(Site.ConnectAsUserUsingAppPoolUser);AssociateApplications=%(Site.AssociateApplications);AssociateBindings=%(Site.AssociateBindings);AssociateVirtualDirectory=%(Site.AssociateVirtualDirectory)"
+			Targets="CreateSitesInIIS"/>		
+			
+		<!-- ManageHosts -->
+		<MSBuild Projects="$(MSBuildProjectFile)"
+			Condition="$(Environment) == 'local'" 
+			Properties="SiteName=%(Site.HttpBindingHostName)"
+			Targets="ManageHosts"/>		
+		
+	</Target>
+	<Target Name="CreateSitesInIIS" >
+		<Message Text="*** ServerName=$(ServerName) ***"/>
+		<Message Text="*** SiteName=$(SiteName) ***"/>
+
+		<!--create site-->
+		<MSBuild Projects="$(ExternalBinariesPath)\MSBuildGlobalFiles\ManageWebsite.targets" 
+				 Targets="CreateWebSite" 
+				 Properties="SleepTimeout=$(SleepTimeout);MachineName=$(ServerName);SiteName=$(SiteName);SitePath=$(SitePath);RecreateSite=$(RecreateSite);AppPoolUser=$(AppPoolUser);AppPoolPass=$(AppPoolPass);AppPoolName=$(AppPoolName);HttpPort=$(HttpPort);CreateHttpBinding=$(CreateHttpBinding);HttpBindingHostName=$(HttpBindingHostName);NetTcpBindingInfo=$(NetTcpBindingInfo);Enable32BitAppOnWin64=$(Enable32BitAppOnWin64);AppPipelineMode=$(AppPipelineMode);RapidFailProtection=$(RapidFailProtection);PeriodicRestartPrivateMemory=$(PeriodicRestartPrivateMemory);ConnectAsUserUsingAppPoolUser=$(ConnectAsUserUsingAppPoolUser);"/>
+
+		<!--create applications-->
+		<MSBuild Projects="$(MSBuildProjectFile)"
+				 Condition="$(AssociateApplications)"
+				 Targets="CreateApplicationsInSite" 
+				 Properties="ServerName=$(ServerName);SiteName=$(SiteName);ApplicationName=%(Application.Identity);RecreateApplication=%(Application.RecreateApplication);AppPoolName=%(Application.AppPoolName);AppPoolUser=%(Application.AppPoolUser);AppPoolPass=%(Application.AppPoolPass);ApplicationPath=%(Application.AppPath);CreateHttpBinding=%(Application.CreateHttpBinding);AppPipelineMode=%(Application.AppPipelineMode);Enable32BitAppOnWin64=%(Application.Enable32BitAppOnWin64);RapidFailProtection=%(Application.RapidFailProtection);PeriodicRestartPrivateMemory=%(Application.PeriodicRestartPrivateMemory);"/>
+
+		<!--create virtual directory-->
+		<MSBuild Projects="$(ExternalBinariesPath)\MSBuildGlobalFiles\ManageWebsite.targets" 
+				 Condition="$(AssociateVirtualDirectory)"
+				 Targets="CreateVirtualDirectory" 
+				 Properties="ServerName=$(ServerName);SiteName=$(SiteName);VirtualDirectoryName=%(VirtualDirectory.Identity);RecreateVirtualDirectory=%(VirtualDirectory.RecreateVirtualDirectory);VirtualDirectoryPath=%(VirtualDirectory.VirtualDirectoryPath);;VirtualDirectoryUser=%(VirtualDirectory.VirtualDirectoryUser);;VirtualDirectoryPass=%(VirtualDirectory.VirtualDirectoryPass);"/>
+				 
+		<!--create bindings -->
+		<MSBuild Projects="$(ExternalBinariesPath)\MSBuildGlobalFiles\ManageWebsite.targets" 
+				 Targets="AddBinding" 
+				 Condition="$(AssociateBindings) And '%(Binding.Identity)' != '' And (($(ServerName) == %(Binding.ServerName) And $(SiteName) == %(Binding.SiteName)) Or '%(Binding.ServerName)' == '')"
+				 Properties="ServerName=$(ServerName);SiteName=$(SiteName);BindingHostName=%(Binding.Identity);BindingPort=%(Binding.BindingPort);BindingProtocol=%(Binding.BindingProtocol)"/>
+				 
+	</Target>
+	
+	<Target Name="CreateApplicationsInSite" >
+		<Message Text="*** ServerName=$(ServerName) ***"/>
+		<Message Text="*** SiteName=$(SiteName) ***"/>
+		<Message Text="*** ApplicationName=$(ApplicationName) ***"/>
+
+		<!--create application-->
+		<MSBuild Projects="$(ExternalBinariesPath)\MSBuildGlobalFiles\ManageWebsite.targets" 
+				Condition="'$(ApplicationName)' != ''"
+				Targets="CreateApplication" 
+				Properties="SleepTimeout=$(SleepTimeout);MachineName=$(ServerName);SiteName=$(SiteName);AppPoolUser=$(AppPoolUser);AppPoolPass=$(AppPoolPass);AppPoolName=$(AppPoolName);ApplicationName=$(ApplicationName);ApplicationPath=$(ApplicationPath);CreateHttpBinding=$(CreateHttpBinding);RecreateApplication=$(RecreateApplication);Enable32BitAppOnWin64=$(Enable32BitAppOnWin64);AppPipelineMode=$(AppPipelineMode);Enable32BitAppOnWin64=$(Enable32BitAppOnWin64);RapidFailProtection=$(RapidFailProtection);PeriodicRestartPrivateMemory=$(PeriodicRestartPrivateMemory);"/>
+	</Target>	
+
+	
+	<Target Name="CreateDeployPackage">
+		<PropertyGroup>
+			<DestinationDirectory>$(InstallDir)</DestinationDirectory>
+		</PropertyGroup>
+		<ConvertToAbsolutePath Paths="$(BuildDir)"> 
+		  <Output TaskParameter="AbsolutePaths" PropertyName="BuildDirectory"/>
+		</ConvertToAbsolutePath>
+		<ConvertToAbsolutePath Paths="$(SourceDirectory)"> 
+		  <Output TaskParameter="AbsolutePaths" PropertyName="SourceFolder"/>
+		</ConvertToAbsolutePath>
+		
+
+		<!-- Publish to build dir -->
+		<Message Text="*** Publish to temp directory $(BuildDirectory) ***"/>
+		<RemoveDir Directories="$(BuildDirectory)" ContinueOnError="true" />
+		<MSBuild Projects="$(ProjectToBuild)" 
+				 Targets="Clean;Rebuild;ResolveReferences;_CopyWebApplication"
+				 Properties="Configuration=$(Configuration);Platform=$(Platform);Verbosity=Minimal;PreBuildEvent=;VisualStudioVersion=14.0;WebProjectOutputDir=$(BuildDirectory);OutDir=$(BuildDirectory)\bin\" />
+	
+		<!-- Copy environment config files -->
+		<Message Text="*** Copy environment config files ***"/>
+		<MSBuild Projects="$(ExternalBinariesPath)\MSBuildGlobalFiles\MSBuild.Utils.tasks"
+			Condition="$(Environment) != 'local' And '%(EnvFileToCopy.Identity)' != ''" 
+			Properties="SourceFolder=$(SourceFolder);WorkingFolder=$(BuildDirectory);ExtraEnvFiles=%(EnvFileToCopy.ExtraEnvFiles);ExtraEnvFolder=%(EnvFileToCopy.ExtraEnvFolder);"
+			Targets="AddEnvironmentFilesToZip"/>
+
+		<!-- zip files to a package -->
+		<ItemGroup>
+			<FoldersToExcludeWhenDeploying Condition="$(Environment) != 'local'" Include="$(BuildDirectory)\html\**\*.*;$(BuildDirectory)\External\**\*.*;$(BuildDirectory)\XML\**\*.*;$(BuildDirectory)\XSLT\**\*.*;" />
+			<PackageFilesToZip Include="$(BuildDirectory)\**\*.*;" Exclude="@(FoldersToExcludeWhenDeploying)"/>
+		</ItemGroup>
+		<MSBuild.ExtensionPack.Framework.MsBuildHelper TaskAction="GetItemCount" InputItems1="@(PackageFilesToZip)">
+			<Output TaskParameter="ItemCount" PropertyName="PackageZipFileCount"/>
+		</MSBuild.ExtensionPack.Framework.MsBuildHelper>
+		<!--Message Text="*** BackupFileCount=$(BackupFileCount) ***"/-->
+
+		<Error Condition="!($(PackageZipFileCount)>1)" Text="*** Nothing to backup in $(BuildDirectory) ***"/>
+		<Message Text="*** Creating package $(PackageFile) ***"/>
+		<MSBuild.ExtensionPack.Compression.Zip  
+				Condition="$(PackageZipFileCount)>1"
+				TaskAction="Create" CompressFiles="@(PackageFilesToZip)" 
+				RemoveRoot="$(BuildDirectory)"
+				ZipFileName="$(PackageFile)"/>
+
+	</Target>
+	<Target Name="UnzipDeployPackage">
+		<ConvertToAbsolutePath Paths="$(BuildDir)"> 
+		  <Output TaskParameter="AbsolutePaths" PropertyName="TempDirectory"/>
+		</ConvertToAbsolutePath>
+		
+		<ItemGroup Condition="Exists($(PackageFile))">
+			<PackageFilesToUnZip Include="$(PackageFile)"/>
+		</ItemGroup>		
+		<ItemGroup Condition="!Exists($(PackageFile))">
+			<PackageFilesToUnZip Include="$(BuildDir)\..\package_*.zip"/>
+		</ItemGroup>	
+		<MSBuild.ExtensionPack.Framework.MsBuildHelper TaskAction="GetItemCount" InputItems1="@(PackageFilesToUnZip)">
+			<Output TaskParameter="ItemCount" PropertyName="PackageFilesToUnZipCount"/>
+		</MSBuild.ExtensionPack.Framework.MsBuildHelper>
+			
+		<Message Text="*** PackageFilesToUnZipCount=$(PackageFilesToUnZipCount) ***"/>
+		<Error Condition="$(PackageFilesToUnZipCount) != 1" Text="*** Nothing to unzip in $(PackageFile) ***"/>
+		
+		<!-- Unzip to build dir -->
+		<Message Text="*** Unzip to temp directory $(TempDirectory) ***"/>
+		<RemoveDir Directories="$(TempDirectory)" ContinueOnError="true" />
+		<MSBuild.ExtensionPack.Compression.Zip 
+			TaskAction="Extract" 
+			ExtractPath="$(TempDirectory)" 
+			ZipFileName="@(PackageFilesToUnZip)"/>
+	
+		<!-- Copy environment config like web.config for hosting in IIS -->
+		<MSBuild Projects="$(ExternalBinariesPath)\MSBuildGlobalFiles\MSBuild.Utils.tasks"
+			Condition="$(Environment) != 'local' And '%(EnvFileToCopy.Identity)' != ''" 
+			Properties="WorkingFolder=$(TempDirectory);FileToCopy=%(EnvFileToCopy.FileToCopy);DestinationFile=%(EnvFileToCopy.DestinationFile);ExtraEnvFiles=%(EnvFileToCopy.ExtraEnvFiles);ExtraEnvFolder=%(EnvFileToCopy.ExtraEnvFolder);"
+			Targets="CopyEnvironmentFiles"/>
+	</Target>
+
+
+	<Target Name="ManageHosts">
+		<MSBuild.ExtensionPack.Computer.HostsFile TaskAction="SetHostEntry"
+			HostName="$(SiteName)"
+			IPAddress="127.0.0.1" />
+	</Target>
+
+	<Target Name="StopSite">
+		<MSBuild Projects="$(ExternalBinariesPath)\MSBuildGlobalFiles\ManageWebsite.targets" Targets="StopSite"
+				 Properties="MachineName=$(WebServerMachine);SiteName=$(SiteName);" />
+	</Target>
+	<Target Name="StartSite">
+		<MSBuild Projects="$(ExternalBinariesPath)\MSBuildGlobalFiles\ManageWebsite.targets" Targets="StartSite"
+				 Properties="MachineName=$(WebServerMachine);SiteName=$(SiteName);" />
+	</Target>
+	<Target Name="IISReset">
+		<!-- IIS reset -->
+		<!--
+		<MSBuild Projects="$(ExternalBinariesPath)\MSBuildGlobalFiles\ManageWebsite.targets" 
+				 Targets="StopSite" 
+				 Properties="MachineName=$(ServerName);SiteName=$(SiteName)"/>
+		<MSBuild Projects="$(ExternalBinariesPath)\MSBuildGlobalFiles\ManageWebsite.targets" 
+				 Targets="StartSite" 
+				 Properties="MachineName=$(ServerName);SiteName=$(SiteName)"/>			
+		-->
+		
+		<!-- start process -->
+		<Exec IgnoreExitCode="true" ContinueOnError="true"
+					Command="$(ExternalBinariesPath)\PSTools\psexec.exe \\$(ServerName) iisreset" />
+
+	</Target>
+
+</Project>

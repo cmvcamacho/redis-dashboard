@@ -18,7 +18,11 @@ namespace Redis.Dashboard.Web.Controllers
         {
             try
             {
-                pattern = pattern + "*";
+                if (string.IsNullOrEmpty(pattern))
+                    pattern = "*";
+                else
+                    pattern = "*" + pattern + "*";
+
                 var model = RedisConfig.GetServerGroupByFriendlyUrl(friendlyUrl);
                 var results = await RedisManager.GetRedisKeysByPattern(friendlyUrl, model.ServerGroup.Endpoints, pattern);
 

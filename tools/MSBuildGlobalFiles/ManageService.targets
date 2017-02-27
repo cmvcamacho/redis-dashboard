@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Project ToolsVersion="4.0" DefaultTargets="Default" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+	<!-- MSBuild Extensions -->
+	<Import Project=".\..\MSBuild.Extension.Pack.4.0.12.0\Binaries\MSBuild.ExtensionPack.tasks"/>
+	<Import Project="MSBuild.Utils.tasks"/>
+	
+	<!-- Custom Properties -->
+	<PropertyGroup>
+		<MachineName></MachineName>
+		<ServiceName></ServiceName>
+		<ServiceDisplayName></ServiceDisplayName>
+		<ServiceExe></ServiceExe>
+		<SourceDirectory></SourceDirectory>
+		<DestinationDirectory></DestinationDirectory>
+		<ServiceUser>LocalSystem</ServiceUser>
+		<ServicePass></ServicePass>
+	</PropertyGroup>
+	
+	<!-- Diagnostic output of properties, and mandatory checks -->
+	<Target Name="CheckParams" >
+		<Message Text="MachineName=$(MachineName)"/>
+		<Message Text="ServiceName=$(ServiceName)"/>
+		<Message Text="ServiceDisplayName=$(ServiceDisplayName)"/>
+		<Message Text="ServiceExe=$(ServiceExe)"/>
+		<Message Text="ServiceUser=$(ServiceUser)"/>
+		<Message Text="ServicePass=$(ServicePass)"/>
+		<Message Text="DestinationDirectory=$(DestinationDirectory)"/>
+		<Error Text ="Not all properties were supplied."
+		 Condition="$([System.String]::IsNullOrEmpty($(MachineName))) Or 
+			$([System.String]::IsNullOrEmpty($(ServiceName))) Or 
+			$([System.String]::IsNullOrEmpty($(ServiceDisplayName))) Or 
+			$([System.String]::IsNullOrEmpty($(ServiceUser))) Or 
+			$([System.String]::IsNullOrEmpty($(ServiceExe))) Or 
+			$([System.String]::IsNullOrEmpty($(DestinationDirectory)))"/> 
+	</Target>
+	
+	
+	<Target Name="StopService">
+		<PropertyGroup>
+			<ServiceExists>false</ServiceExists>
+		</PropertyGroup>
+		<MSBuild.ExtensionPack.Computer.WindowsService TaskAction="CheckExists" MachineName="$(MachineName)" ServiceName="$(ServiceName)" >
+			<Output TaskParameter="Exists" PropertyName="ServiceExists"/>
+		</MSBuild.ExtensionPack.Computer.WindowsService>
+		<Message Text="Service $(ServiceName) exists on $(MachineName)" Condition="$(ServiceExists)"/>
+		<Message Text="Service $(ServiceName) does not exist on $(MachineName)" Condition="!$(ServiceExists)"/>
+		
+		<!-- Stop-->
+		<Message Condition="$(ServiceExists)" Text="Stopping Service"/>
+		<MSBuild.ExtensionPack.Computer.WindowsService 
+			Condition="$(ServiceExists)"
+			TaskAction="Stop" MachineName="$(MachineName)" ServiceName="$(ServiceName)"/>
+	</Target>
+	<Target Name="StartService">
+		<PropertyGroup>
+			<ServiceExists>false</ServiceExists>
+		</PropertyGroup>
+		<MSBuild.ExtensionPack.Computer.WindowsService TaskAction="CheckExists" MachineName="$(MachineName)" ServiceName="$(ServiceName)" >
+			<Output TaskParameter="Exists" PropertyName="ServiceExists"/>
+		</MSBuild.ExtensionPack.Computer.WindowsService>
+		<Message Text="Service $(ServiceName) exists on $(MachineName)" Condition="$(ServiceExists)"/>
+		<Message Text="Service $(ServiceName) does not exist on $(MachineName)" Condition="!$(ServiceExists)"/>
+		
+		<!-- Start-->
+		<Message Condition="$(ServiceExists)" Text="Starting Service"/>
+		<MSBuild.ExtensionPack.Computer.WindowsService 
+			Condition="$(ServiceExists)"
+			TaskAction="Start" MachineName="$(MachineName)" ServiceName="$(ServiceName)" />
+	</Target>
+	
+	<Target Name="CreateService">
+		<CallTarget Targets="CheckParams" ContinueOnError="false"/>
+		
+		<PropertyGroup>
+			<ServiceExists>false</ServiceExists>
+		</PropertyGroup>
+		
+		<MSBuild.ExtensionPack.Computer.WindowsService TaskAction="CheckExists" MachineName="$(MachineName)" ServiceName="$(ServiceName)" >
+			<Output TaskParameter="Exists" PropertyName="ServiceExists"/>
+		</MSBuild.ExtensionPack.Computer.WindowsService>
+		<Message Text="Service $(ServiceName) exists on $(MachineName)" Condition="$(ServiceExists)"/>
+		<Message Text="Service $(ServiceName) does not exist on $(MachineName)" Condition="!$(ServiceExists)"/>
+		
+		<!-- Stop and uninstall-->
+		<Message Text ="Stopping Service"/>
+		<MSBuild.ExtensionPack.Computer.WindowsService TaskAction="Stop" MachineName="$(MachineName)" ServiceName="$(ServiceName)" Condition="$(ServiceExists)"/>
+		<Message Text ="Uninstalling Service"/>
+		<MSBuild.ExtensionPack.Computer.WindowsService TaskAction="Uninstall" MachineName="$(MachineName)" ServiceName="$(ServiceName)" Condition="$(ServiceExists)"/>
+		
+	
+		<!-- install service-->
+		<MSBuild.ExtensionPack.Computer.WindowsService Condition="$([System.String]::IsNullOrEmpty($(ServicePass)))"
+				TaskAction="Install" MachineName="$(MachineName)" ServiceName="$(ServiceName)" 
+				ServiceDisplayName="$(ServiceDisplayName)" User="$(ServiceUser)" 
+				ServicePath="$(DestinationDirectory)\$(ServiceExe)" />
+		<MSBuild.ExtensionPack.Computer.WindowsService Condition="!$([System.String]::IsNullOrEmpty($(ServicePass)))"
+				TaskAction="Install" MachineName="$(MachineName)" ServiceName="$(ServiceName)" 
+				ServiceDisplayName="$(ServiceDisplayName)" User="$(ServiceUser)" Password="$(ServicePass)"
+				ServicePath="$(DestinationDirectory)\$(ServiceExe)" />				
+		<MSBuild.ExtensionPack.Computer.WindowsService TaskAction="Start" MachineName="$(MachineName)" ServiceName="$(ServiceName)" />
+		
+		
+	</Target>
+</Project>
+

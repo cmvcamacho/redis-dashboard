@@ -6,8 +6,17 @@ A dashboard to display the status of an individual Redis server or multiple serv
 ###### Dashboard
 ![dashboard](Capture.PNG)
 
-## Usage
+## Installation
+The installation scripts allow you to install this on remote machines. The steps to deploy are:
+* Compile solution with VS2015 (only needed to restore the nuget packages)
+* Configure installation properties file ".\setup\site\config\production.properties"
+* Open a Command Prompt with Administrator rights and run the command ".\setup\site\Install.bat production"
+* The 'production' keyword maps to the file ".\setup\site\config\production.properties", this file have a lot of configurable properties with meaningful names so it should be easy to configure them
+Note:
+You can have multiple configuration files, one for each different environment you need.
 
+
+## Usage
 The dashboard can be configured editing the config.json file:
 ```
 [
@@ -41,8 +50,8 @@ The dashboard can be configured editing the config.json file:
 ]
 ```
 If don't have a Redis server available but want to give this dashboard a go, you can use the executables in _tools_ folder to run a local Redis server. The commands are:
-* .\tools\redis-server.exe --> this will start a Redis server
-* .\tools\redis-cli.exe --latency --> this will simulate work on Redis
+* .\tools\redis\redis-server.exe --> this will start a Redis server
+* .\tools\redis\redis-cli.exe --latency --> this will simulate work on Redis
 
 
 
