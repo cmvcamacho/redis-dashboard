@@ -30,16 +30,17 @@ namespace Redis.Dashboard.Web
                         "~/Scripts/modernizr-*"));
 
 
-            bundles.Add(new StyleBundle("~/Content/vendor").Include(
-                      "~/Content/bootstrap.css",
-                      "~/Content/metisMenu/metisMenu.min.css",
-                      "~/Content/morrisjs/morris.css",
-                      "~/Content/font-awesome/css/font-awesome.min.css"
-                      ));
+            bundles.Add(new StyleBundle("~/Content/vendor")
+                    .Include("~/Content/bootstrap.css", new CssRewriteUrlTransform())
+                    .Include("~/Content/metisMenu/metisMenu.min.css", new CssRewriteUrlTransform())
+                    .Include("~/Content/morrisjs/morris.css", new CssRewriteUrlTransform())
+                    .Include("~/Content/font-awesome/css/font-awesome.min.css", new CssRewriteUrlTransform())
+                   );
 
-            bundles.Add(new StyleBundle("~/Content/custom").Include(
-                      "~/Content/sb-admin-2.css",
-                      "~/Content/site.css"));
+            bundles.Add(new StyleBundle("~/Content/custom")
+                    .Include("~/Content/sb-admin-2.css", new CssRewriteUrlTransform())
+                    .Include("~/Content/site.css", new CssRewriteUrlTransform())
+                  );
         }
     }
 }
