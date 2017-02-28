@@ -21,6 +21,9 @@ namespace Redis.Dashboard.Web.Controllers
                 var model = RedisConfig.GetServerGroupByFriendlyUrl(friendlyUrl);
                 model.Servers = await RedisManager.GetRedisServersInfo(friendlyUrl, model.ServerGroup.Endpoints);
 
+                if(model.Servers == null)
+                    return Json(model, JsonRequestBehavior.AllowGet);
+
                 var masterServers = model.Servers.Where(s => s.IsMaster);
 
                 model.Totals = new ServersTotals();
