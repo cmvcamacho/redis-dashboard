@@ -20,7 +20,7 @@ namespace Redis.Dashboard.Web.Controllers
             {
                 if (string.IsNullOrEmpty(pattern))
                     pattern = "*";
-                else
+                else if(!pattern.Contains("*"))
                     pattern = "*" + pattern + "*";
 
                 var model = RedisConfig.GetServerGroupByFriendlyUrl(friendlyUrl);
