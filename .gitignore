@@ -248,3 +248,4 @@ paket-files/
 
 Flash.Site/areas_back.xml
 *.orig
+*.rdb

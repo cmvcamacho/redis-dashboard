@@ -164,7 +164,10 @@ return cjson.encode(keyAttrs)";
                     await Task.WhenAll(tasks.ToArray());
                 }
 
-                return results.OrderBy(l => l.Key).ToList();
+                results = results
+                    .GroupBy(r => r.Key).Select(g => g.First())
+                    .OrderBy(l => l.Key).ToList();
+                return results;
             }
             catch (Exception e)
             {
