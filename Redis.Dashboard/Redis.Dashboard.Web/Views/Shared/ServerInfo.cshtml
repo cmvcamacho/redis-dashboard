@@ -22,10 +22,10 @@
                             <td>Mode</td>
                             <td>{ server.Server.Mode }</td>
                         </tr>
-                        <tr>
+                        @*<tr>
                             <td>OS</td>
                             <td>{ server.Server.OS }</td>
-                        </tr>
+                        </tr>*@
                         <tr>
                             <td>Pid</td>
                             <td>{ server.Server.ProcessId }</td>
@@ -123,7 +123,8 @@
                             <td>PubSub patterns</td>
                             <td>{ server.Stats.PubsubPatterns }</td>
                         </tr>
-                        <tr class="collapsed active">
+
+                        <tr class="active">
                             <td colspan="2">Replication</td>
                         </tr>
                         <tr>
@@ -134,14 +135,14 @@
                             <td>Connected slaves</td>
                             <td>{ server.Replication.ConnectedSlaves }</td>
                         </tr>
-                        <tr>
+                        @*<tr>
                             <td>Repl backlog active</td>
                             <td>{ server.Replication.ReplBacklogActive }</td>
                         </tr>
                         <tr>
                             <td>Repl backlog size</td>
                             <td>{ server.Replication.ReplBacklogSize }</td>
-                        </tr>
+                        </tr>*@
 
                         <tr class="active">
                             <td colspan="2">CPU</td>
@@ -154,13 +155,13 @@
                             <td>Used cpu user</td>
                             <td>{ server.CPU.UsedCpuSys }</td>
                         </tr>
-                        <tr class="collapsed active">
+                        @*<tr class="collapsed active">
                             <td colspan="2">Cluster</td>
                         </tr>
                         <tr>
                             <td>Enabled</td>
                             <td>{ server.Cluster.Enabled }</td>
-                        </tr>
+                        </tr>*@
                         <tr class="active">
                             <td colspan="2">Keyspace</td>
                         </tr>
