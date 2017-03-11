@@ -42,12 +42,24 @@ namespace Redis.Dashboard.Web.Controllers
                                         .Sum(s => s.Stats.InstantaneousOutputKbps);
                 model.Totals.TotalOps = masterServers
                                         .Sum(s => s.Stats.InstantaneousOpsPerSec);
-                model.Totals.TotalMisses = masterServers
-                                        .Sum(s => s.Stats.KeyspaceMisses)
+
+                var totalHits = masterServers.Sum(s => s.Stats.KeyspaceHits);
+                var totalMisses = masterServers.Sum(s => s.Stats.KeyspaceMisses);
+                model.Totals.TotalHits = totalHits
                                         .GetBytesReadable().Replace("B", string.Empty);
-                model.Totals.TotalHits = masterServers
-                                        .Sum(s => s.Stats.KeyspaceHits)
+                model.Totals.TotalMisses = totalMisses
                                         .GetBytesReadable().Replace("B", string.Empty);
+                model.Totals.TotalMisses = totalMisses
+                                        .GetBytesReadable().Replace("B", string.Empty);
+
+                model.Totals.PercentageHits = string.Format("{0}%", totalHits > 0 
+                    ? Math.Round((float)totalHits / (totalHits + totalMisses), 3) * 100
+                    : 0);
+                model.Totals.PercentageMisses = string.Format("{0}%", totalMisses > 0
+                    ? Math.Round((float)totalMisses / (totalHits + totalMisses), 3) * 100
+                    : 0);
+
+
                 model.Totals.InfoCluster = string.Format("{0} masters / {1} slaves",
                                         masterServers.Count(),
                                         model.Servers.Count() - masterServers.Count());

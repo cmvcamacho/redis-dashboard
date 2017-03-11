@@ -67,8 +67,8 @@
                         <i class="fa fa-info fa-4x"></i>
                     </div>
                     <div class="col-xs-9 text-right">
+                        <div>&nbsp;</div>
                         <div class="big">{ redisInfo.Totals.InfoCluster }</div>
-                        <div>Total Clients</div>
                     </div>
                 </div>
             </div>
@@ -83,6 +83,7 @@
                     </div>
                     <div class="col-xs-9 text-right">
                         <div class="big">{ redisInfo.Totals.TotalHits } / { redisInfo.Totals.TotalMisses }</div>
+                        <div>{ redisInfo.Totals.PercentageHits } / { redisInfo.Totals.PercentageMisses }</div>
                         <div>Total Hits/Misses</div>
                     </div>
                 </div>

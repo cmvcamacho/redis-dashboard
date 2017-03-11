@@ -16,6 +16,8 @@ namespace Redis.Dashboard.Web.Models
         public string InfoCluster { get; set; }
         public string TotalHits { get; set; }
         public string TotalMisses { get; set; }
+        public string PercentageHits { get; set; }
+        public string PercentageMisses { get; set; }
 
     }
 }
